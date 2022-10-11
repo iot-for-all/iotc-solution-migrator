@@ -1,0 +1,72 @@
+{
+    "@id": "dtmi:testapplucaM3:TestModel_4x8;1",
+    "@type": "Interface",
+    "contents": [
+        {
+            "@id": "dtmi:testapplucaM3:TestModel_4x8:temperature;1",
+            "@type": [
+                "Telemetry",
+                "Temperature",
+                "NumberValue"
+            ],
+            "displayName": {
+                "en": "Temperature"
+            },
+            "name": "temperature",
+            "schema": "double"
+        },
+        {
+            "@id": "dtmi:testapplucaM3:TestModel_4x8:pressure;1",
+            "@type": [
+                "Telemetry",
+                "Pressure",
+                "NumberValue"
+            ],
+            "displayName": {
+                "en": "Pressure"
+            },
+            "name": "pressure",
+            "schema": "double"
+        },
+        {
+            "@id": "dtmi:testapplucaM3:TestModel_4x8:deviceInfo;1",
+            "@type": "Component",
+            "displayName": {
+                "en": "Device Info"
+            },
+            "name": "deviceInfo",
+            "schema": {
+                "@context": [
+                    "dtmi:iotcentral:context;2",
+                    "dtmi:dtdl:context;2"
+                ],
+                "@id": "dtmi:testapplucaM3:DeviceInfo;1",
+                "@type": "Interface",
+                "contents": [
+                    {
+                        "@id": "dtmi:testapplucaM3:DeviceInfo:battery;1",
+                        "@type": [
+                            "Telemetry",
+                            "NumberValue"
+                        ],
+                        "displayName": {
+                            "en": "Battery"
+                        },
+                        "name": "battery",
+                        "schema": "integer"
+                    }
+                ],
+                "displayName": {
+                    "en": "DeviceInfo"
+                }
+            }
+        }
+    ],
+    "displayName": {
+        "en": "TestModel"
+    },
+    "@context": [
+        "dtmi:iotcentral:context;2",
+        "dtmi:dtdl:context;2"
+    ]
+}

@@ -1,0 +1,88 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "iothubPolicyKey": {
+            "type": "string"
+        },
+        "iothubNamespace": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "managedIdentityId": "managed_id",
+        "streamingUnits": 3,
+        "iothub": {
+            "consumerGroup": "$Default",
+            "policyName": "iothubowner",
+            "endpoint": "messages/events"
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2017-04-01-preview",
+            "name": "variables['managedIdentityId']",
+            "location": "[resourceGroup().location]",
+            "type": "Microsoft.StreamAnalytics/StreamingJobs",
+            "identity": {
+                "type": "systemAssigned"
+            },
+            "properties": {
+                "sku": {
+                    "name": "standard"
+                },
+                "jobType": "Cloud",
+                "transformation": {
+                    "name": "Transformation",
+                    "properties": {
+                        "streamingUnits": "[variables('streamingUnits')]",
+                        "query": "SELECT *\nINTO PhoneAsADevice\nFROM IoTHub"
+                    }
+                },
+                "inputs": [
+                    {
+                        "name": "IoTHub",
+                        "properties": {
+                            "type": "Stream",
+                            "datasource": {
+                                "type": "Microsoft.Devices/IotHubs",
+                                "properties": {
+                                    "iotHubNamespace": "[parameters('iothubNamespace')]",
+                                    "consumerGroupName": "[variables('iothub').consumerGroup]",
+                                    "endpoint": "[variables('iothub').endpoint]",
+                                    "sharedAccessPolicyName": "[variables('iothub').policyName]",
+                                    "sharedAccessPolicyKey": "[parameters('iothubPolicyKey')]"
+                                }
+                            },
+                            "compression": {
+                                "type": "None"
+                            },
+                            "serialization": {
+                                "type": "Json",
+                                "properties": {
+                                    "encoding": "UTF8"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "outputs": [
+                    {
+                        "name": "output",
+                        "properties": {
+                            "datasource": {
+                                "type": "PowerBI",
+                                "properties": {
+                                    "dataset": "dataset_name",
+                                    "table": "table_name",
+                                    "groupId": "01234567-89ab-cdef-0123-456789abcdef",
+                                    "authenticationMode": "Msi"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
