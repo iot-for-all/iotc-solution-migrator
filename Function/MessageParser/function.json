@@ -5,7 +5,7 @@
       "name": "IoTHubMessages",
       "direction": "in",
       "eventHubName": "solution-hub",
-      "connection":"IoTHubEventHubCS",
+      "connection": "IoTHubEventHubCS",
       "cardinality": "many",
       "consumerGroup": "$Default",
       "dataType": "string"
@@ -16,7 +16,7 @@
       "direction": "out",
       "commandText": "dbo.azureiotPhoneasadevice2",
       "connectionStringSetting": "SqlConnectionString"
-  }
+    }
   ],
   "scriptFile": "../dist/MessageParser/index.js"
 }
