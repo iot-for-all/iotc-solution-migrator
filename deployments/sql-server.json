@@ -1,6 +1,14 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sqlAdministratorLogin": {
+            "type": "string"
+        },
+        "sqlAdministratorLoginPassword": {
+            "type": "securestring"
+        }
+    },
     "variables": {
         "apiVersions": {
             "sqlserver": "2021-02-01-preview"
@@ -30,7 +38,7 @@
         {
             "type": "Microsoft.Sql/servers/databases",
             "apiVersion": "[variables('apiVersions').sqlserver]",
-            "name": "[format('{0}/{1}', variables('names').sqlserverName, variables('names').databaseName)]",
+            "name": "[concat(variables('names').sqlserverName,'/', variables('names').databaseName)]",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "Database"
@@ -47,16 +55,15 @@
                 "maxSizeBytes": 1073741824
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers', [variables('names').sqlserverName])]"
+                "[resourceId('Microsoft.Sql/servers', variables('names').sqlserverName)]"
             ]
         },
         {
             "type": "Microsoft.Sql/servers/firewallRules",
             "apiVersion": "[variables('apiVersions').sqlserver]",
-            "description":"Allow all Azure resources",
-            "name": "[format('{0}/{1}', [variables('names').sqlserverName], 'AllowAllWindowsAzureIps')]",
+            "name": "[concat(variables('names').sqlserverName, '/AllowAllWindowsAzureIps')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Sql/servers', [variables('names').sqlserverName])]"
+                "[resourceId('Microsoft.Sql/servers', variables('names').sqlserverName)]"
             ]
         }
     ]

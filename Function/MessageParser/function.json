@@ -14,8 +14,7 @@
       "name": "azureiotPhoneasadevice2",
       "type": "sql",
       "direction": "out",
-      "commandText": "dbo.azureiotPhoneasadevice2",
-      "connectionStringSetting": "SqlConnectionString"
+      "commandText": "dbo.azureiotPhoneasadevice2"
     }
   ],
   "scriptFile": "../dist/MessageParser/index.js"
