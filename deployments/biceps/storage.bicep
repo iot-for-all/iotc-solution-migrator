@@ -4,7 +4,7 @@
 param projectName string = 'contoso'
 
 var accountName = '${projectName}sa${uniqueString(resourceGroup().id)}'
-var location = resourceGroup().location
+param location string = resourceGroup().location
 
 resource StorageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: accountName
@@ -22,4 +22,4 @@ resource StorageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
 }
 
 output AccountName string = accountName
-output PrimaryKey string = StorageAccount.listKeys().keys[0].value
+output AccountId string = StorageAccount.id

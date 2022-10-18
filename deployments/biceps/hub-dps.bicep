@@ -6,9 +6,8 @@ param projectName string = 'contoso'
 @description('The storage account name.')
 param storageAccountName string
 
-@description('The storage account primary key.')
-@secure()
-param storagePrimaryKey string
+@description('The storage resource Id')
+param storageId string
 
 @description('The SKU to use for the IoT Hub.')
 param skuName string = 'S1'
@@ -32,7 +31,7 @@ var dpsName = '${projectName}dps${uniqueString(resourceGroup().id)}'
 var dpsScript = '${projectName}dps${uniqueString(resourceGroup().id)}script'
 var userId = '${projectName}id${uniqueString(resourceGroup().id)}'
 var enrollmentGroupId = '${projectName}dps${uniqueString(resourceGroup().id)}eg'
-var location = resourceGroup().location
+param location string = resourceGroup().location
 
 resource IoTHub 'Microsoft.Devices/IotHubs@2021-07-02' = {
   name: iotHubName
@@ -113,7 +112,7 @@ resource DPSEnrollmentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' 
   }
   properties: {
     storageAccountSettings: {
-      storageAccountKey: storagePrimaryKey
+      storageAccountKey: listKeys(storageId, '2022-05-01').keys[0].value
       storageAccountName: storageAccountName
     }
     azCliVersion: '2.28.0'

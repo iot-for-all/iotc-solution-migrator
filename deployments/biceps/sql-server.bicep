@@ -3,9 +3,10 @@
 @maxLength(11)
 param projectName string = 'contoso'
 
+param location string = resourceGroup().location
+
 var serverName = '${projectName}sql${uniqueString(resourceGroup().id)}'
 var databaseName = 'solutiondb'
-var location = resourceGroup().location
 
 resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   location: location

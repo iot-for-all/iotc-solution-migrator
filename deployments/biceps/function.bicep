@@ -6,9 +6,8 @@ param projectName string = 'contoso'
 @description('The storage account name.')
 param storageAccountName string
 
-@description('The storage account name.')
-@secure()
-param storageAccountKey string
+@description('The storage resource Id')
+param storageId string
 
 @description('Repository url.')
 param repoUrl string = 'https://github.com/iot-for-all/iotc-solution-migrator.git'
@@ -32,7 +31,8 @@ param iothubOwnerCS string
 
 var hostingName = '${projectName}host${uniqueString(resourceGroup().id)}'
 var functionName = '${projectName}fn${uniqueString(resourceGroup().id)}'
-var location = resourceGroup().location
+var storageAccountKey = listKeys(storageId, '2022-05-01').keys[0].value
+param location string = resourceGroup().location
 
 resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: hostingName
