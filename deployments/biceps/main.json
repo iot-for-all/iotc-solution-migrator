@@ -1,0 +1,649 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.11.1.770",
+      "templateHash": "18267996207991216857"
+    }
+  },
+  "parameters": {
+    "projectName": {
+      "type": "string",
+      "defaultValue": "contoso",
+      "maxLength": 11,
+      "minLength": 1,
+      "metadata": {
+        "description": "Define the project name or prefix for all objects."
+      }
+    },
+    "primaryKey": {
+      "type": "secureString",
+      "metadata": {
+        "description": "The Enrollment group primary key"
+      }
+    },
+    "secondaryKey": {
+      "type": "secureString",
+      "metadata": {
+        "description": "The Enrollment group secondary key"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "storage",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "projectName": {
+            "value": "[parameters('projectName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.11.1.770",
+              "templateHash": "14105814526458003308"
+            }
+          },
+          "parameters": {
+            "projectName": {
+              "type": "string",
+              "defaultValue": "contoso",
+              "maxLength": 11,
+              "minLength": 1,
+              "metadata": {
+                "description": "Define the project name or prefix for all objects."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            }
+          },
+          "variables": {
+            "accountName": "[format('{0}sa{1}', parameters('projectName'), uniqueString(resourceGroup().id))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+              "apiVersion": "2022-05-01",
+              "name": "[format('{0}/{1}/{2}', variables('accountName'), 'default', 'tables')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/fileServices', variables('accountName'), 'default')]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/fileServices",
+              "apiVersion": "2022-05-01",
+              "name": "[format('{0}/{1}', variables('accountName'), 'default')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('accountName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2022-05-01",
+              "name": "[variables('accountName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard_LRS"
+              },
+              "kind": "StorageV2"
+            }
+          ],
+          "outputs": {
+            "AccountName": {
+              "type": "string",
+              "value": "[variables('accountName')]"
+            },
+            "AccountId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Storage/storageAccounts', variables('accountName'))]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "iot",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "storageAccountName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage')).outputs.AccountName.value]"
+          },
+          "storageId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage')).outputs.AccountId.value]"
+          },
+          "primaryKey": {
+            "value": "[parameters('primaryKey')]"
+          },
+          "secondaryKey": {
+            "value": "[parameters('secondaryKey')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.11.1.770",
+              "templateHash": "6290880199306911409"
+            }
+          },
+          "parameters": {
+            "projectName": {
+              "type": "string",
+              "defaultValue": "contoso",
+              "maxLength": 11,
+              "minLength": 1,
+              "metadata": {
+                "description": "Define the project name or prefix for all objects."
+              }
+            },
+            "storageAccountName": {
+              "type": "string",
+              "metadata": {
+                "description": "The storage account name."
+              }
+            },
+            "storageId": {
+              "type": "string",
+              "metadata": {
+                "description": "The storage resource Id"
+              }
+            },
+            "skuName": {
+              "type": "string",
+              "defaultValue": "S1",
+              "metadata": {
+                "description": "The SKU to use for the IoT Hub."
+              }
+            },
+            "skuUnits": {
+              "type": "int",
+              "defaultValue": 1,
+              "metadata": {
+                "description": "The number of IoT Hub units."
+              }
+            },
+            "d2cPartitions": {
+              "type": "int",
+              "defaultValue": 4,
+              "metadata": {
+                "description": "Partitions used for the event stream."
+              }
+            },
+            "primaryKey": {
+              "type": "secureString",
+              "metadata": {
+                "description": "The Enrollment group primary key"
+              }
+            },
+            "secondaryKey": {
+              "type": "secureString",
+              "metadata": {
+                "description": "The Enrollment group secondary key"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            }
+          },
+          "variables": {
+            "iotHubName": "[format('{0}hub{1}', parameters('projectName'), uniqueString(resourceGroup().id))]",
+            "dpsName": "[format('{0}dps{1}', parameters('projectName'), uniqueString(resourceGroup().id))]",
+            "dpsScript": "[format('{0}dps{1}script', parameters('projectName'), uniqueString(resourceGroup().id))]",
+            "userId": "[format('{0}id{1}', parameters('projectName'), uniqueString(resourceGroup().id))]",
+            "enrollmentGroupId": "[format('{0}dps{1}eg', parameters('projectName'), uniqueString(resourceGroup().id))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Devices/IotHubs",
+              "apiVersion": "2021-07-02",
+              "name": "[variables('iotHubName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('skuName')]",
+                "capacity": "[parameters('skuUnits')]"
+              },
+              "properties": {
+                "eventHubEndpoints": {
+                  "events": {
+                    "retentionTimeInDays": 1,
+                    "partitionCount": "[parameters('d2cPartitions')]"
+                  }
+                },
+                "routing": {
+                  "routes": [
+                    {
+                      "name": "DeviceTwin",
+                      "source": "TwinChangeEvents",
+                      "endpointNames": [
+                        "events"
+                      ],
+                      "isEnabled": true
+                    },
+                    {
+                      "name": "DigitalTwinChange",
+                      "source": "DigitalTwinChangeEvents",
+                      "endpointNames": [
+                        "events"
+                      ],
+                      "isEnabled": true
+                    }
+                  ],
+                  "enrichments": [
+                    {
+                      "endpointNames": [
+                        "events"
+                      ],
+                      "key": "modelId",
+                      "value": "$twin.tags.modelId"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Devices/provisioningServices",
+              "apiVersion": "2022-02-05",
+              "name": "[variables('dpsName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('skuName')]",
+                "capacity": "[parameters('skuUnits')]"
+              },
+              "properties": {
+                "allocationPolicy": "Hashed",
+                "iotHubs": [
+                  {
+                    "connectionString": "[format('HostName={0};SharedAccessKeyName=iothubowner;SharedAccessKey={1}', reference(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName'))).hostName, listkeys(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName')), '2021-07-02').value)]",
+                    "location": "[parameters('location')]"
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Devices/IotHubs', variables('iotHubName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+              "apiVersion": "2022-01-31-preview",
+              "name": "[variables('userId')]",
+              "location": "[parameters('location')]"
+            },
+            {
+              "type": "Microsoft.Resources/deploymentScripts",
+              "apiVersion": "2020-10-01",
+              "name": "[variables('dpsScript')]",
+              "kind": "AzureCLI",
+              "location": "[parameters('location')]",
+              "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId')))]": {}
+                }
+              },
+              "properties": {
+                "storageAccountSettings": {
+                  "storageAccountKey": "[listKeys(parameters('storageId'), '2022-05-01').keys[0].value]",
+                  "storageAccountName": "[parameters('storageAccountName')]"
+                },
+                "azCliVersion": "2.28.0",
+                "cleanupPreference": "OnSuccess",
+                "timeout": "PT30M",
+                "retentionInterval": "P1D",
+                "scriptContent": "[format('az iot dps enrollment-group create -g {0} --dps-name {1} --enrollment-id {2} --primary-key {3} --secondary-key {4}', resourceGroup().name, variables('dpsName'), variables('enrollmentGroupId'), parameters('primaryKey'), parameters('secondaryKey'))]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "ScopeId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Devices/provisioningServices', variables('dpsName'))).idScope]"
+            },
+            "EventHubCS": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName'))).eventHubEndpoints.events.endpoint]"
+            },
+            "HubOwnerCS": {
+              "type": "string",
+              "value": "[format('HostName={0};SharedAccessKeyName=iothubowner;SharedAccessKey={1}', reference(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName'))).hostName, listkeys(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName')), '2021-07-02').value[0].primaryKey)]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'storage')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "sql",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "projectName": {
+            "value": "[parameters('projectName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.11.1.770",
+              "templateHash": "427898201691503540"
+            }
+          },
+          "parameters": {
+            "projectName": {
+              "type": "string",
+              "defaultValue": "contoso",
+              "maxLength": 11,
+              "minLength": 1,
+              "metadata": {
+                "description": "Define the project name or prefix for all objects."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            }
+          },
+          "variables": {
+            "serverName": "[format('{0}sql{1}', parameters('projectName'), uniqueString(resourceGroup().id))]",
+            "databaseName": "solutiondb"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Sql/servers",
+              "apiVersion": "2022-05-01-preview",
+              "name": "[variables('serverName')]",
+              "location": "[parameters('location')]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "administratorLogin": "solutionsqladmin",
+                "administratorLoginPassword": "solutionsqladmin",
+                "administrators": {},
+                "minimalTlsVersion": "1.2",
+                "restrictOutboundNetworkAccess": "Disabled",
+                "publicNetworkAccess": "Enabled",
+                "version": "12.0"
+              }
+            },
+            {
+              "type": "Microsoft.Sql/servers/databases",
+              "apiVersion": "2022-05-01-preview",
+              "name": "[variables('databaseName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "GP_S_Gen5",
+                "tier": "GeneralPurpose",
+                "capacity": 1,
+                "family": "Gen5"
+              }
+            }
+          ],
+          "outputs": {
+            "sqlEndpoint": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Sql/servers', variables('serverName'))).fullyQualifiedDomainName]"
+            },
+            "sqlDatabase": {
+              "type": "string",
+              "value": "[variables('databaseName')]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "func",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "iothubEventHubCS": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iot')).outputs.EventHubCS.value]"
+          },
+          "iothubOwnerCS": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iot')).outputs.HubOwnerCS.value]"
+          },
+          "sqlDatabase": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sqlDatabase.value]"
+          },
+          "sqlEndpoint": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sqlEndpoint.value]"
+          },
+          "storageId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage')).outputs.AccountId.value]"
+          },
+          "storageAccountName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage')).outputs.AccountName.value]"
+          },
+          "projectName": {
+            "value": "[parameters('projectName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.11.1.770",
+              "templateHash": "11977792509515523419"
+            }
+          },
+          "parameters": {
+            "projectName": {
+              "type": "string",
+              "defaultValue": "contoso",
+              "maxLength": 11,
+              "minLength": 1,
+              "metadata": {
+                "description": "Define the project name or prefix for all objects."
+              }
+            },
+            "storageAccountName": {
+              "type": "string",
+              "metadata": {
+                "description": "The storage account name."
+              }
+            },
+            "storageId": {
+              "type": "string",
+              "metadata": {
+                "description": "The storage resource Id"
+              }
+            },
+            "repoUrl": {
+              "type": "string",
+              "defaultValue": "https://github.com/iot-for-all/iotc-solution-migrator.git",
+              "metadata": {
+                "description": "Repository url."
+              }
+            },
+            "functionBranch": {
+              "type": "string",
+              "defaultValue": "main",
+              "metadata": {
+                "description": "Repository branch."
+              }
+            },
+            "sqlEndpoint": {
+              "type": "string",
+              "metadata": {
+                "description": "Sql server endpoint."
+              }
+            },
+            "sqlDatabase": {
+              "type": "string",
+              "metadata": {
+                "description": "Sql server database."
+              }
+            },
+            "iothubEventHubCS": {
+              "type": "secureString",
+              "metadata": {
+                "description": "IoTHub EventHub endpoint Connection string."
+              }
+            },
+            "iothubOwnerCS": {
+              "type": "secureString",
+              "metadata": {
+                "description": "IoTHub Owner connection string."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            }
+          },
+          "variables": {
+            "hostingName": "[format('{0}host{1}', parameters('projectName'), uniqueString(resourceGroup().id))]",
+            "functionName": "[format('{0}fn{1}', parameters('projectName'), uniqueString(resourceGroup().id))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/sites/sourcecontrols",
+              "apiVersion": "2022-03-01",
+              "name": "[format('{0}/{1}', variables('functionName'), 'web')]",
+              "properties": {
+                "repoUrl": "[parameters('repoUrl')]",
+                "branch": "[parameters('functionBranch')]",
+                "isManualIntegration": true
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('functionName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('hostingName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "tier": "Dynamic",
+                "name": "Y1"
+              }
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('functionName')]",
+              "location": "[parameters('location')]",
+              "kind": "functionapp",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "httpsOnly": true,
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingName'))]",
+                "siteConfig": {
+                  "appSettings": [
+                    {
+                      "name": "AzureWebJobsStorage",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', parameters('storageAccountName'), environment().suffixes.storage, listKeys(parameters('storageId'), '2022-05-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', parameters('storageAccountName'), environment().suffixes.storage, listKeys(parameters('storageId'), '2022-05-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "FUNCTIONS_EXTENSION_VERSION",
+                      "value": "~2"
+                    },
+                    {
+                      "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                      "value": "~16"
+                    },
+                    {
+                      "name": "FUNCTIONS_WORKER_RUNTIME",
+                      "value": "node"
+                    },
+                    {
+                      "name": "SQL_ENDPOINT",
+                      "value": "[parameters('sqlEndpoint')]"
+                    },
+                    {
+                      "name": "SQLDatabase",
+                      "value": "[parameters('sqlDatabase')]"
+                    },
+                    {
+                      "name": "IoTHubEventHubCS",
+                      "value": "[parameters('iothubEventHubCS')]"
+                    },
+                    {
+                      "name": "IoTHubOwnerCS",
+                      "value": "[parameters('iothubOwnerCS')]"
+                    }
+                  ],
+                  "minTlsVersion": "1.2"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingName'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'iot')]",
+        "[resourceId('Microsoft.Resources/deployments', 'sql')]",
+        "[resourceId('Microsoft.Resources/deployments', 'storage')]"
+      ]
+    }
+  ]
+}
