@@ -1,5 +1,5 @@
 import { AzureFunction, Context, HttpRequest } from '@azure/functions';
-import { DTDLCapability, DTDLComponent, DTDLModel, SQLColumn, SQLDataType } from './types';
+import { DTDLCapability, DTDLComponent, DTDLDisplayName, DTDLModel, DTDLSchema, SQLColumn, SQLDataType } from './types';
 import { modelToBindingName, normalizeColumnName, writeTable } from './utils';
 import { Connection } from 'tedious';
 import { queryDatabase, connect } from './db';
@@ -69,9 +69,7 @@ function parse(context: Context, modelData: DTDLModel) {
         }
         else {
             const parsed = parseCapability(context, capability as DTDLCapability);
-            res = [...res,
-            ...(parsed ? [parsed] : [])
-            ]
+            res = [...res, ...parsed]
         }
     }
     return res;
@@ -85,41 +83,91 @@ function parseComponent(context: Context, component: DTDLComponent): SQLColumn[]
         }
         else {
             const parsed = parseCapability(context, capability as DTDLCapability, component);
-            res = [...res,
-            ...(parsed ? [parsed] : [])
-            ]
+            res = [...res, ...parsed]
         }
     }
     return res;
 }
 
-function parseCapability(context: Context, capability: DTDLCapability, component?: DTDLComponent): SQLColumn {
+function parseSchema(schema: DTDLSchema, capabilityName: string, capabilityDisplayName: string, component?: DTDLComponent): SQLColumn[] {
+    const name = component ? `${component.name}.${capabilityName}` : capabilityName;
+    const displayName = component ? `${component.displayName || component.displayName['en']}.${capabilityDisplayName}` : (capabilityDisplayName); // fixed for now
+    switch (schema) {
+        case 'integer':
+            return [{
+                name,
+                displayName,
+                dataType: 'int'
+            }];
+        case 'double':
+            return [{
+                name,
+                displayName,
+                dataType: 'float'
+            }];
+        case 'string':
+            return [{
+                name,
+                displayName,
+                dataType: 'nvarchar(max)'
+            }];
+        case 'vector':
+            return [{
+                name: `${name}.X`,
+                displayName: `${displayName}.X`,
+                dataType: 'float'
+            }, {
+                name: `${name}.Y`,
+                displayName: `${displayName}.Y`,
+                dataType: 'float'
+            },
+            {
+                name: `${name}.Z`,
+                displayName: `${displayName}.Z`,
+                dataType: 'float'
+            }];
+        case 'geopoint':
+            return [{
+                name: `${name}.lat`,
+                displayName: `${displayName}.Latitude`,
+                dataType: 'float'
+            }, {
+                name: `${name}.lon`,
+                displayName: `${displayName}.Longitude`,
+                dataType: 'float'
+            },
+            {
+                name: `${name}.alt`,
+                displayName: `${displayName}.Altitude`,
+                dataType: 'float'
+            }];
+        default:
+            return [{
+                name,
+                displayName,
+                dataType: 'nvarchar(max)'
+            }];
+    }
+}
+
+function parseCapability(context: Context, capability: DTDLCapability, component?: DTDLComponent): SQLColumn[] {
+    const capabilityDisplayName = capability.displayName['en'] ? capability.displayName['en'] : capability.displayName;
+
     if (capability['@type'] === 'Command') {
-        return undefined;
+        return [];
     }
     if ((capability['@type'] === 'Property' || capability['@type'].includes('Property')) && capability['writable']) {
-        return undefined;
+        return [];
     }
-    let dataType: SQLDataType;
-    switch (capability['schema']) {
-        case 'integer':
-            dataType = 'int'
-            break;
-        case 'double':
-            dataType = 'float'
-            break;
-        case 'string':
-            dataType = 'nvarchar(max)'
-            break;
-        default:
-            dataType = 'nvarchar(max)'
-            break;
+
+    if (typeof capability['schema'] === 'object' && capability['schema']['@type'] === 'object') {
+        return capability['schema']['fields'].flatMap(field => {
+            const fieldDisplayName = field.displayName['en'] ? field.displayName['en'] : field.displayName;
+            return parseSchema(field.schema, `${capability.name}.${field.name}`, `${capabilityDisplayName}.${fieldDisplayName}`);
+        })
     }
-    return {
-        name: component ? `${component.name}.${capability.name}` : capability.name,
-        displayName: component ? `${component.displayName || component.displayName['en']}.${capability.displayName || capability.displayName['en']}` : (capability.displayName || capability.displayName['en']), // fixed for now
-        dataType
-    };
+
+    return parseSchema(capability['schema'], capability.name, capabilityDisplayName, component);
 }
 
 function scriptCreateTable(columns: SQLColumn[], tableName: string) {

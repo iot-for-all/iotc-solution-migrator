@@ -5,8 +5,9 @@ param projectName string = 'contoso'
 
 param location string = resourceGroup().location
 
-var serverName = '${projectName}sql${uniqueString(resourceGroup().id)}'
+var serverName = take('${projectName}sql${uniqueString(resourceGroup().id)}', 20)
 var databaseName = 'solutiondb'
+var adminLoginPassword = '${toUpper(take(projectName, 4))}_${take(uniqueString(resourceGroup().id), 8)}@'
 
 resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   location: location
@@ -16,7 +17,7 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   }
   properties: {
     administratorLogin: 'solutionsqladmin'
-    administratorLoginPassword: 'solutionsqladmin'
+    administratorLoginPassword: adminLoginPassword
     administrators: {
 
     }
@@ -25,18 +26,20 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
     publicNetworkAccess: 'Enabled'
     version: '12.0'
   }
-}
-
-resource Database 'Microsoft.Sql/servers/databases@2022-05-01-preview' = {
-  location: location
-  name: databaseName
-  sku: {
-    name: 'GP_S_Gen5'
-    tier: 'GeneralPurpose'
-    capacity: 1
-    family: 'Gen5'
+  resource Database 'databases@2022-05-01-preview' = {
+    location: location
+    name: databaseName
+    sku: {
+      name: 'GP_S_Gen5'
+      tier: 'GeneralPurpose'
+      capacity: 1
+      family: 'Gen5'
+    }
   }
 }
 
+
+
 output sqlEndpoint string = SqlServer.properties.fullyQualifiedDomainName
-output sqlDatabase string = Database.name
+output sqlDatabase string = databaseName
+output sqlAdminPW string = adminLoginPassword

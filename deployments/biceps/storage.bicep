@@ -3,7 +3,7 @@
 @maxLength(11)
 param projectName string = 'contoso'
 
-var accountName = '${projectName}sa${uniqueString(resourceGroup().id)}'
+var accountName = take('${projectName}sa${uniqueString(resourceGroup().id)}', 20)
 param location string = resourceGroup().location
 
 resource StorageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {

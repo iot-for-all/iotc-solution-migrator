@@ -13,6 +13,16 @@ param secondaryKey string
 
 param location string = resourceGroup().location
 
+var dpsScript = take('${projectName}dps${uniqueString(resourceGroup().id)}script', 20)
+var enrollmentGroupId = take('${projectName}dps${uniqueString(resourceGroup().id)}eg', 20)
+
+module UserIdentity 'identity.bicep' = {
+  name: 'identity'
+  params: {
+    projectName: projectName
+  }
+}
+
 module StorageAccount 'storage.bicep' = {
   name: 'storage'
   params: {
@@ -21,13 +31,21 @@ module StorageAccount 'storage.bicep' = {
   }
 }
 
+resource storage 'Microsoft.Storage/storageAccounts@2022-05-01' existing = {
+  name: StorageAccount.name
+}
+
+resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
+  name: UserIdentity.name
+}
+
+resource userIdentityRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+  name: 'roleAssignment'
+}
+
 module IoT 'hub-dps.bicep' = {
   name: 'iot'
   params: {
-    storageAccountName: StorageAccount.outputs.AccountName
-    storageId: StorageAccount.outputs.AccountId
-    primaryKey: primaryKey
-    secondaryKey: secondaryKey
     location: location
   }
 }
@@ -51,5 +69,36 @@ module Function 'function.bicep' = {
     storageId: StorageAccount.outputs.AccountId
     storageAccountName: StorageAccount.outputs.AccountName
     projectName: projectName
+    // userIdentityId: UserIdentity.id
   }
+}
+
+resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+  kind: 'AzureCLI'
+  location: location
+  name: dpsScript
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${identity.id}': {}
+    }
+  }
+  properties: {
+    storageAccountSettings: {
+      storageAccountKey: storage.listKeys().keys[0].value
+      storageAccountName: StorageAccount.outputs.AccountName
+    }
+    azCliVersion: '2.40.0'
+    cleanupPreference: 'OnSuccess'
+    timeout: 'PT30M'
+    retentionInterval: 'P1D'
+    scriptContent: 'az config set extension.use_dynamic_install=yes_without_prompt && az login --identity && az iot dps enrollment-group create -g ${resourceGroup().name} --dps-name ${IoT.outputs.DPSName} --enrollment-id ${enrollmentGroupId} --primary-key ${primaryKey} --secondary-key ${secondaryKey} --subscription ${subscription().subscriptionId}'
+  }
+  dependsOn: [
+    StorageAccount
+    userIdentityRoleAssignment
+    IoT
+    SqlServer
+    Function
+  ]
 }

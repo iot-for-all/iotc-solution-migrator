@@ -29,6 +29,17 @@
             "schema": "double"
         },
         {
+            "@type": [
+                "Telemetry",
+                "AccelerationVector"
+            ],
+            "displayName": {
+                "en": "Acceleration"
+            },
+            "name": "accelerometer",
+            "schema": "vector"
+        },
+        {
             "@id": "dtmi:testapplucaM3:TestModel_4x8:deviceInfo;1",
             "@type": "Component",
             "displayName": {

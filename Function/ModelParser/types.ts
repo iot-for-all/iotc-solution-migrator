@@ -2,12 +2,21 @@ export type DTDLDisplayName = string | {
     [language: string]: string
 };
 
+export type DTDLSchema = string | {
+    "@type": string,
+    fields?: {
+        name: string,
+        displayName: DTDLDisplayName,
+        schema: string
+    }[]
+}
+
 export type DTDLCapability = {
     "@id": string,
     "@type": string | string[],
     displayName: DTDLDisplayName,
     name: string,
-    schema: string
+    schema: DTDLSchema
 }
 
 export type DTDLComponent = {

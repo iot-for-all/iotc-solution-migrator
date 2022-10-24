@@ -10,7 +10,7 @@ param storageAccountName string
 param storageId string
 
 @description('Repository url.')
-param repoUrl string = 'https://github.com/iot-for-all/iotc-solution-migrator.git'
+param repoUrl string = 'https://github.com/lucadruda/iotc-solution-migrator.git'
 
 @description('Repository branch.')
 param functionBranch string = 'main'
@@ -29,10 +29,13 @@ param iothubEventHubCS string
 @secure()
 param iothubOwnerCS string
 
-var hostingName = '${projectName}host${uniqueString(resourceGroup().id)}'
-var functionName = '${projectName}fn${uniqueString(resourceGroup().id)}'
+var hostingName = take('${projectName}host${uniqueString(resourceGroup().id)}', 20)
+var functionName = take('${projectName}fn${uniqueString(resourceGroup().id)}', 20)
+// var configScript = take('${projectName}fnscript${uniqueString(resourceGroup().id)}', 20)
 var storageAccountKey = listKeys(storageId, '2022-05-01').keys[0].value
+
 param location string = resourceGroup().location
+// param userIdentityId string
 
 resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: hostingName
@@ -103,3 +106,4 @@ resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
     }
   }
 }
+
