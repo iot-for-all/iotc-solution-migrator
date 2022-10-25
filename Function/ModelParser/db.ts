@@ -37,13 +37,17 @@ export async function connect(context: Context) {
 }
 
 
-export async function queryDatabase(context: Context, connection: Connection, script: string): Promise<string> {
+export async function queryDatabase(context: Context, connection: Connection, script: string | null): Promise<string> {
+    if (script === null) {
+        return;
+    }
     let ret = '';
     return new Promise<string>((resolve, reject) => {
         // Read all rows from table
         const request = new Request(script,
             (err, rowCount) => {
                 if (err) {
+                    context.log(err);
                     if (err.message.startsWith('There is already an object')) {
                         return resolve(err.message);
                     }

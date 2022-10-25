@@ -1,5 +1,5 @@
 import { AzureFunction, Context, HttpRequest } from '@azure/functions';
-import { DTDLCapability, DTDLComponent, DTDLDisplayName, DTDLModel, DTDLSchema, SQLColumn, SQLDataType } from './types';
+import { DTDLCapability, DTDLComponent, DTDLDisplayName, DTDLModel, DTDLSchema, SQLColumn, SQLConfig, SQLDataType } from './types';
 import { modelToBindingName, normalizeColumnName, writeTable } from './utils';
 import { Connection } from 'tedious';
 import { queryDatabase, connect } from './db';
@@ -23,14 +23,17 @@ const HttpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     if (req.body) {
         try {
             const model = req.body.capabilityModel;
-            const columns = parse(context, model);
+            const config = parse(context, model);
             const tableName = modelToBindingName(model['@id']);
-            const scriptCreate = scriptCreateTable(columns, tableName);
-            const scriptSP = scriptCreateSelectProc(columns, tableName);
+            const scriptCreate = scriptCreateTable(config, tableName);
+            const scriptSPTelemetry = scriptCreateSelectProc(config.telemetry, tableName);
+            const scriptSPProperties = scriptCreateSelectProc(config.properties, `${tableName}_props`);
 
             let body = await queryDatabase(context, sqlConnection, scriptCreate);
-            body += `\n${await queryDatabase(context, sqlConnection, scriptSP)}`;
-            await writeTable(context, `${tableName}.json`, JSON.stringify(columns.map(c => c.name)));
+            body += `\n${await queryDatabase(context, sqlConnection, scriptSPTelemetry)}`;
+            body += `\n${await queryDatabase(context, sqlConnection, scriptSPProperties)}`;
+            await writeTable(context, `${tableName}.json`, JSON.stringify(config.telemetry.map(c => c.name)));
+            await writeTable(context, `${tableName}_props.json`, JSON.stringify(config.properties.map(c => c.name)));
             context.res = {
                 status: 201,
                 body
@@ -60,30 +63,47 @@ const HttpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 };
 
 
-function parse(context: Context, modelData: DTDLModel) {
-    let res: SQLColumn[] = [];
+function parse(context: Context, modelData: DTDLModel): SQLConfig {
+    let res = { telemetry: [], properties: [] };
     for (const capability of modelData.contents) {
         if (capability['@type'] === 'Component') {
             // component
-            res = [...res, ...parseComponent(context, capability as DTDLComponent)]
+            const component = parseComponent(context, capability as DTDLComponent);
+            res = {
+                telemetry: [...res.telemetry, ...component.telemetry],
+                properties: [...res.properties, ...component.properties]
+            };
         }
         else {
             const parsed = parseCapability(context, capability as DTDLCapability);
-            res = [...res, ...parsed]
+            res = {
+                telemetry: [...res.telemetry, ...parsed.telemetry],
+                properties: [...res.properties, ...parsed.properties]
+            };
         }
     }
     return res;
 }
 
-function parseComponent(context: Context, component: DTDLComponent): SQLColumn[] {
-    let res: SQLColumn[] = [];
+function parseComponent(context: Context, component: DTDLComponent): SQLConfig {
+    let res = {
+        telemetry: [],
+        properties: []
+    }
     for (const capability of component['schema'].contents) {
         if (capability['@type'] === 'Component') {
-            res = [...res, ...parseComponent(context, capability as DTDLComponent)];
+            const component = parseComponent(context, capability as DTDLComponent);
+            res = {
+                telemetry: [...res.telemetry, ...component.telemetry],
+                properties: [...res.properties, ...component.properties]
+            }
         }
         else {
             const parsed = parseCapability(context, capability as DTDLCapability, component);
-            res = [...res, ...parsed]
+            res = {
+                telemetry: [...res.telemetry, ...parsed.telemetry],
+                properties: [...res.properties, ...parsed.properties]
+            }
         }
     }
     return res;
@@ -150,43 +170,72 @@ function parseSchema(schema: DTDLSchema, capabilityName: string, capabilityDispl
     }
 }
 
-function parseCapability(context: Context, capability: DTDLCapability, component?: DTDLComponent): SQLColumn[] {
+function parseCapability(context: Context, capability: DTDLCapability, component?: DTDLComponent): SQLConfig {
+    const empty = {
+        telemetry: [],
+        properties: []
+    }
+    let columns: SQLColumn[];
     const capabilityDisplayName = capability.displayName['en'] ? capability.displayName['en'] : capability.displayName;
 
     if (capability['@type'] === 'Command') {
-        return [];
+        return empty;
     }
+
+    // skip desired properties, just use reported.
     if ((capability['@type'] === 'Property' || capability['@type'].includes('Property')) && capability['writable']) {
-        return [];
+        return empty;
     }
 
     if (typeof capability['schema'] === 'object' && capability['schema']['@type'] === 'object') {
-        return capability['schema']['fields'].flatMap(field => {
+        columns = capability['schema']['fields'].flatMap(field => {
             const fieldDisplayName = field.displayName['en'] ? field.displayName['en'] : field.displayName;
             return parseSchema(field.schema, `${capability.name}.${field.name}`, `${capabilityDisplayName}.${fieldDisplayName}`);
         })
     }
+    else {
+        columns = parseSchema(capability['schema'], capability.name, capabilityDisplayName, component);
+    }
 
-    return parseSchema(capability['schema'], capability.name, capabilityDisplayName, component);
+    if (capability['@type'] === 'Property') {
+        return {
+            telemetry: [],
+            properties: columns
+        }
+    }
+    else {
+        return {
+            telemetry: columns,
+            properties: []
+        }
+    }
 }
 
-function scriptCreateTable(columns: SQLColumn[], tableName: string) {
-    let script = `create table dbo.${tableName}(\ndeviceId NVARCHAR(50) NOT NULL,\nts DATETIME NOT NULL,\n`;
-    for (const column of columns) {
-        script += `${normalizeColumnName(column.name)} ${column.dataType},\n`
+function scriptCreateTable(config: SQLConfig, tableName: string) {
+    let scripts = `create table dbo.${tableName}(\ndeviceId NVARCHAR(50) NOT NULL,\nts DATETIME NOT NULL,\n`;
+    for (const column of config.telemetry) {
+        scripts += `${normalizeColumnName(column.name)} ${column.dataType},\n`
     }
-    script += `primary key (deviceId,ts)\n)`;
-    return script;
+    scripts += `primary key (deviceId,ts)\n)\n`;
+    scripts += `create table dbo.${tableName}_props(\ndeviceId NVARCHAR(50) NOT NULL,\nts DATETIME NOT NULL,\nversion int,\n`;
+    for (const column of config.properties) {
+        scripts += `${normalizeColumnName(column.name)} ${column.dataType},\n`
+    }
+    scripts += `primary key (deviceId,ts)\n)`;
+    return scripts;
 }
 
 function scriptCreateSelectProc(columns: SQLColumn[], tableName: string) {
-    let script = `create or alter procedure select_${tableName} as
+    if (columns.length === 0) {
+        return null;
+    }
+    let scripts = `create or alter procedure select_${tableName} as
     begin\n select deviceId as DeviceId, ts as EventTimestamp, `;
     columns.forEach((column, idx) => {
-        script += `${normalizeColumnName(column.name)} as ${normalizeColumnName(column.displayName)}${(idx < (columns.length - 1)) ? ',' : ''} `
+        scripts += `${normalizeColumnName(column.name)} as ${normalizeColumnName(column.displayName)}${(idx < (columns.length - 1)) ? ',' : ''} `
     });
-    script += `\n from dbo.${tableName}\nend`;
-    return script;
+    scripts += `\n from dbo.${tableName}\nend\n`;
+    return scripts;
 }
 
 

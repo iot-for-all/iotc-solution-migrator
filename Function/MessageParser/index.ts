@@ -46,6 +46,8 @@ const IoTHubTrigger: AzureFunction = async function (context: Context, IoTHubMes
                     : message
                 )
             }
+            context.bindings[modelToBindingName(modelId)] = row;
+            return;
         }
         else if (messageSource === MessageSources.TWIN_CHANGE) {
             context.log(`Received twin update: ${JSON.stringify(message)}. Properties: ${JSON.stringify(context.bindingData.propertiesArray[index])}`);
@@ -65,7 +67,7 @@ const IoTHubTrigger: AzureFunction = async function (context: Context, IoTHubMes
             const { reported: reportedProperties } = message.properties;
             const reportedKeys = Object.keys(reportedProperties).filter(r => r !== '$version' && r !== '$metadata');
             row = {
-                ...row, ...(modelId ? tables[modelToBindingName(modelId)].reduce((obj, capability) => {
+                ...row, ...(modelId ? tables[`${modelToBindingName(modelId)}_props`].reduce((obj, capability) => {
                     if (capability.indexOf('.') > 0) { // a component
                         const [componentName, capabilityName] = capability.split('.');
                         if (reportedKeys.includes(componentName) && reportedProperties[componentName]['__t'] === 'c' && reportedProperties[componentName][capabilityName]) {
@@ -88,6 +90,8 @@ const IoTHubTrigger: AzureFunction = async function (context: Context, IoTHubMes
                     : message
                 )
             }
+            context.bindings[`${modelToBindingName(modelId)}_props`] = row;
+            return;
         }
         else if (messageSource === MessageSources.DIGITAL_TWIN_CHANGE) {
             if (Array.isArray(message) && message.find(msg => msg.path === '/$metadata/$model')) {
@@ -100,7 +104,6 @@ const IoTHubTrigger: AzureFunction = async function (context: Context, IoTHubMes
             return;
         }
         context.log(`Using model Id '${modelId}'`);
-        context.bindings[modelToBindingName(modelId)] = row;
     });
 };
 

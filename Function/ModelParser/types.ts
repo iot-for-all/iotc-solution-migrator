@@ -51,3 +51,8 @@ export type SQLColumn = {
     displayName: string,
     dataType: SQLDataType
 }
+
+export type SQLConfig = {
+    telemetry: SQLColumn[],
+    properties: SQLColumn[]
+}
