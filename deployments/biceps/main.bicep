@@ -32,6 +32,9 @@ module StorageAccount 'storage.bicep' = {
     location: location
     identityId: identity.id
   }
+  dependsOn:[
+    UserIdentity
+  ]
 }
 
 resource storage 'Microsoft.Storage/storageAccounts@2022-05-01' existing = {
@@ -51,6 +54,9 @@ module IoT 'hub-dps.bicep' = {
   params: {
     location: location
   }
+  dependsOn:[
+    UserIdentity
+  ]
 }
 
 module SqlServer 'sql-server.bicep' = {
@@ -60,6 +66,10 @@ module SqlServer 'sql-server.bicep' = {
     location: location
     identitySID: identity.properties.principalId
   }
+  dependsOn:[
+    UserIdentity
+    IoT
+  ]
 }
 
 module Function 'function.bicep' = {
@@ -75,6 +85,12 @@ module Function 'function.bicep' = {
     projectName: projectName
     identityId: identity.id
   }
+  dependsOn:[
+    UserIdentity
+    IoT
+    StorageAccount
+    SqlServer
+  ]
 }
 
 module SetupScript 'script.bicep' = {
