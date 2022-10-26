@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "17300568551848077230"
+      "templateHash": "3746659708503817773"
     }
   },
   "parameters": {
@@ -30,10 +30,6 @@
         "description": "The Enrollment group secondary key"
       }
     },
-    "location": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().location]"
-    },
     "tables": {
       "type": "array",
       "defaultValue": [],
@@ -43,6 +39,7 @@
     }
   },
   "variables": {
+    "location": "[resourceGroup().location]",
     "enrollmentGroupId": "[take(format('{0}dps{1}eg', parameters('projectName'), uniqueString(resourceGroup().id)), 20)]"
   },
   "resources": [
@@ -67,7 +64,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "17382535905467855362"
+              "templateHash": "2679106618678049695"
             }
           },
           "parameters": {
@@ -107,7 +104,17 @@
                 "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))]"
               ]
             }
-          ]
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))]"
+            },
+            "principalId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))).principalId]"
+            }
+          }
         }
       }
     },
@@ -125,10 +132,10 @@
             "value": "[parameters('projectName')]"
           },
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[variables('location')]"
           },
           "identityId": {
-            "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'identity')]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]"
           }
         },
         "template": {
@@ -138,7 +145,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "4338792236493910856"
+              "templateHash": "2903534875894806265"
             }
           },
           "parameters": {
@@ -207,6 +214,10 @@
             "AccountId": {
               "type": "string",
               "value": "[resourceId('Microsoft.Storage/storageAccounts', variables('accountName'))]"
+            },
+            "AccountKey": {
+              "type": "string",
+              "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('accountName')), '2022-05-01').keys[0].value]"
             }
           }
         }
@@ -226,7 +237,7 @@
         "mode": "Incremental",
         "parameters": {
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[variables('location')]"
           }
         },
         "template": {
@@ -387,10 +398,10 @@
             "value": "[parameters('projectName')]"
           },
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[variables('location')]"
           },
           "identitySID": {
-            "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'identity'), '2022-01-31-preview').principalId]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.principalId.value]"
           }
         },
         "template": {
@@ -511,7 +522,7 @@
         "mode": "Incremental",
         "parameters": {
           "location": {
-            "value": "[parameters('location')]"
+            "value": "[variables('location')]"
           },
           "iothubEventHubCS": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iot')).outputs.EventHubCS.value]"
@@ -535,7 +546,7 @@
             "value": "[parameters('projectName')]"
           },
           "identityId": {
-            "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'identity')]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]"
           }
         },
         "template": {
@@ -727,10 +738,10 @@
             "value": "func"
           },
           "identityId": {
-            "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'identity')]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]"
           },
           "storageAccountKey": {
-            "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', 'storage'), '2022-05-01').keys[0].value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage')).outputs.AccountKey.value]"
           },
           "storageAccountName": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage')).outputs.AccountName.value]"
