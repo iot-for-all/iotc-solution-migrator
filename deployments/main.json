@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "13531585257873625172"
+      "templateHash": "6980441165562332681"
     }
   },
   "parameters": {
@@ -33,44 +33,19 @@
     "location": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]"
+    },
+    "tables": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "List of table names"
+      }
     }
   },
   "variables": {
-    "dpsScript": "[take(format('{0}dps{1}script', parameters('projectName'), uniqueString(resourceGroup().id)), 20)]",
     "enrollmentGroupId": "[take(format('{0}dps{1}eg', parameters('projectName'), uniqueString(resourceGroup().id)), 20)]"
   },
   "resources": [
-    {
-      "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2020-10-01",
-      "name": "[variables('dpsScript')]",
-      "kind": "AzurePowerShell",
-      "location": "[parameters('location')]",
-      "identity": {
-        "type": "UserAssigned",
-        "userAssignedIdentities": {
-          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'identity'))]": {}
-        }
-      },
-      "properties": {
-        "storageAccountSettings": {
-          "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', 'storage'), '2022-05-01').keys[0].value]",
-          "storageAccountName": "[reference(resourceId('Microsoft.Resources/deployments', 'storage')).outputs.AccountName.value]"
-        },
-        "azPowerShellVersion": "ubuntu-20.04",
-        "cleanupPreference": "OnSuccess",
-        "timeout": "PT30M",
-        "retentionInterval": "P1D",
-        "primaryScriptUri": "https://raw.githubusercontent.com/lucadruda/iotc-solution-migrator/main/deployments/scripts/config.sh"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'func')]",
-        "[resourceId('Microsoft.Resources/deployments', 'iot')]",
-        "[resourceId('Microsoft.Resources/deployments', 'sql')]",
-        "[resourceId('Microsoft.Resources/deployments', 'storage')]",
-        "[resourceId('Microsoft.Resources/deployments', 'identity')]"
-      ]
-    },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
@@ -151,6 +126,9 @@
           },
           "location": {
             "value": "[parameters('location')]"
+          },
+          "identityId": {
+            "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'identity')]"
           }
         },
         "template": {
@@ -160,7 +138,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "236494930059144145"
+              "templateHash": "4338792236493910856"
             }
           },
           "parameters": {
@@ -176,6 +154,12 @@
             "location": {
               "type": "string",
               "defaultValue": "[resourceGroup().location]"
+            },
+            "identityId": {
+              "type": "string",
+              "metadata": {
+                "description": "The user managed identity id"
+              }
             }
           },
           "variables": {
@@ -203,6 +187,12 @@
               "apiVersion": "2022-05-01",
               "name": "[variables('accountName')]",
               "location": "[parameters('location')]",
+              "identity": {
+                "type": "SystemAssigned,UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', parameters('identityId'))]": {}
+                }
+              },
               "sku": {
                 "name": "Standard_LRS"
               },
@@ -220,7 +210,10 @@
             }
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'identity')]"
+      ]
     },
     {
       "type": "Microsoft.Resources/deployments",
@@ -392,6 +385,9 @@
           },
           "location": {
             "value": "[parameters('location')]"
+          },
+          "identitySID": {
+            "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'identity'), '2022-01-31-preview').principalId]"
           }
         },
         "template": {
@@ -401,7 +397,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "12782278305720626692"
+              "templateHash": "3536977580587036432"
             }
           },
           "parameters": {
@@ -417,6 +413,9 @@
             "location": {
               "type": "string",
               "defaultValue": "[resourceGroup().location]"
+            },
+            "identitySID": {
+              "type": "string"
             }
           },
           "variables": {
@@ -463,7 +462,13 @@
               "properties": {
                 "administratorLogin": "solutionsqladmin",
                 "administratorLoginPassword": "[variables('adminLoginPassword')]",
-                "administrators": {},
+                "administrators": {
+                  "administratorType": "ActiveDirectory",
+                  "azureADOnlyAuthentication": false,
+                  "principalType": "Application",
+                  "sid": "[parameters('identitySID')]",
+                  "tenantId": "[subscription().tenantId]"
+                },
                 "minimalTlsVersion": "1.2",
                 "restrictOutboundNetworkAccess": "Disabled",
                 "publicNetworkAccess": "Enabled",
@@ -486,7 +491,10 @@
             }
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'identity')]"
+      ]
     },
     {
       "type": "Microsoft.Resources/deployments",
@@ -521,6 +529,9 @@
           },
           "projectName": {
             "value": "[parameters('projectName')]"
+          },
+          "identityId": {
+            "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'identity')]"
           }
         },
         "template": {
@@ -530,7 +541,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "6461604628406209985"
+              "templateHash": "7320386351419267704"
             }
           },
           "parameters": {
@@ -579,6 +590,12 @@
                 "description": "IoTHub Owner connection string."
               }
             },
+            "identityId": {
+              "type": "string",
+              "metadata": {
+                "description": "The user managed identity id"
+              }
+            },
             "location": {
               "type": "string",
               "defaultValue": "[resourceGroup().location]"
@@ -613,7 +630,10 @@
               "location": "[parameters('location')]",
               "kind": "functionapp,linux",
               "identity": {
-                "type": "SystemAssigned"
+                "type": "SystemAssigned, UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', parameters('identityId'))]": {}
+                }
               },
               "properties": {
                 "httpsOnly": true,
@@ -673,14 +693,178 @@
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingName'))]"
               ]
             }
-          ]
+          ],
+          "outputs": {
+            "FunctionUrl": {
+              "type": "string",
+              "value": "[format('https://{0}/api/ModelParser?code={1}', reference(resourceId('Microsoft.Web/sites', variables('functionName'))).defaultHostName, listKeys(format('{0}/host/default', resourceId('Microsoft.Web/sites', variables('functionName'))), '2022-03-01').functionKeys.default)]"
+            }
+          }
         }
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'iot')]",
         "[resourceId('Microsoft.Resources/deployments', 'sql')]",
-        "[resourceId('Microsoft.Resources/deployments', 'storage')]"
+        "[resourceId('Microsoft.Resources/deployments', 'storage')]",
+        "[resourceId('Microsoft.Resources/deployments', 'identity')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "script",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "functionName": {
+            "value": "func"
+          },
+          "identityId": {
+            "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'identity')]"
+          },
+          "storageAccountKey": {
+            "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', 'storage'), '2022-05-01').keys[0].value]"
+          },
+          "storageAccountName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage')).outputs.AccountName.value]"
+          },
+          "projectName": {
+            "value": "[parameters('projectName')]"
+          },
+          "tables": {
+            "value": "[parameters('tables')]"
+          },
+          "dpsEnrollment": {
+            "value": {
+              "resourceName": "[reference(resourceId('Microsoft.Resources/deployments', 'iot')).outputs.DPSName.value]",
+              "enrollmentName": "[variables('enrollmentGroupId')]",
+              "primaryKey": "[parameters('primaryKey')]",
+              "secondaryKey": "[parameters('secondaryKey')]"
+            }
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.11.1.770",
+              "templateHash": "16798116076858081429"
+            }
+          },
+          "parameters": {
+            "identityId": {
+              "type": "string"
+            },
+            "functionName": {
+              "type": "string"
+            },
+            "tables": {
+              "type": "array",
+              "defaultValue": []
+            },
+            "projectName": {
+              "type": "string",
+              "defaultValue": "contoso"
+            },
+            "storageAccountKey": {
+              "type": "secureString"
+            },
+            "storageAccountName": {
+              "type": "string"
+            },
+            "dpsEnrollment": {
+              "type": "object",
+              "metadata": {}
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Resources/deploymentScripts",
+              "apiVersion": "2020-10-01",
+              "name": "[format('{0}-configscript', parameters('projectName'))]",
+              "kind": "AzurePowerShell",
+              "location": "[resourceGroup().location]",
+              "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', parameters('identityId'))]": {}
+                }
+              },
+              "properties": {
+                "storageAccountSettings": {
+                  "storageAccountKey": "[parameters('storageAccountKey')]",
+                  "storageAccountName": "[parameters('storageAccountName')]"
+                },
+                "azPowerShellVersion": "8.3",
+                "cleanupPreference": "OnExpiration",
+                "timeout": "PT30M",
+                "retentionInterval": "P1D",
+                "primaryScriptUri": "https://raw.githubusercontent.com/lucadruda/iotc-solution-migrator/main/deployments/scripts/config.ps1",
+                "environmentVariables": [
+                  {
+                    "name": "SUBSCRIPTION_ID",
+                    "value": "[subscription().subscriptionId]"
+                  },
+                  {
+                    "name": "FUNCTIONAPP_NAME",
+                    "value": "[parameters('functionName')]"
+                  },
+                  {
+                    "name": "REPO_URL",
+                    "value": "https://github.com/lucadruda/iotc-solution-migrator"
+                  },
+                  {
+                    "name": "REPO_BRANCH",
+                    "value": "main"
+                  },
+                  {
+                    "name": "TABLES",
+                    "value": "[string(parameters('tables'))]"
+                  },
+                  {
+                    "name": "DPS_ENROLLMENT_NAME",
+                    "value": "[parameters('dpsEnrollment').enrollmentName]"
+                  },
+                  {
+                    "name": "DPS_RESOURCE_NAME",
+                    "value": "[parameters('dpsEnrollment').resourceName]"
+                  },
+                  {
+                    "name": "DPS_ENROLLMENT_PRIMARY_KEY",
+                    "value": "[parameters('dpsEnrollment').primaryKey]"
+                  },
+                  {
+                    "name": "DPS_ENROLLMENT_SECONDARY_KEY",
+                    "value": "[parameters('dpsEnrollment').secondaryKey]"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'func')]",
+        "[resourceId('Microsoft.Resources/deployments', 'iot')]",
+        "[resourceId('Microsoft.Resources/deployments', 'sql')]",
+        "[resourceId('Microsoft.Resources/deployments', 'storage')]",
+        "[resourceId('Microsoft.Resources/deployments', 'identity')]"
       ]
     }
-  ]
+  ],
+  "outputs": {
+    "FunctionUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'func')).outputs.FunctionUrl.value]"
+    },
+    "ScopeId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iot')).outputs.ScopeId.value]"
+    }
+  }
 }
