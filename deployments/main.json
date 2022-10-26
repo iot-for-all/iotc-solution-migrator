@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "6980441165562332681"
+      "templateHash": "17300568551848077230"
     }
   },
   "parameters": {
@@ -368,7 +368,10 @@
             }
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'identity')]"
+      ]
     },
     {
       "type": "Microsoft.Resources/deployments",
@@ -493,6 +496,7 @@
         }
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'iot')]",
         "[resourceId('Microsoft.Resources/deployments', 'identity')]"
       ]
     },
