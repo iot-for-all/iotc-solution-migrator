@@ -11,8 +11,8 @@ param identityId string
 resource StorageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: accountName
   location: location
-  identity:{
-    type:'SystemAssigned,UserAssigned'
+  identity: {
+    type: 'SystemAssigned,UserAssigned'
     userAssignedIdentities: {
       '${identityId}': {}
     }
@@ -29,5 +29,8 @@ resource StorageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   }
 }
 
+var storageKey = StorageAccount.listKeys().keys[0].value
+
 output AccountName string = accountName
 output AccountId string = StorageAccount.id
+output AccountKey string = storageKey

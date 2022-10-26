@@ -11,7 +11,7 @@ param primaryKey string
 @secure()
 param secondaryKey string
 
-param location string = resourceGroup().location
+var location = resourceGroup().location
 
 @description('List of table names')
 param tables array = []
@@ -30,31 +30,31 @@ module StorageAccount 'storage.bicep' = {
   params: {
     projectName: projectName
     location: location
-    identityId: identity.id
+    identityId: UserIdentity.outputs.id
   }
-  dependsOn:[
+  dependsOn: [
     UserIdentity
   ]
 }
 
-resource storage 'Microsoft.Storage/storageAccounts@2022-05-01' existing = {
-  name: StorageAccount.name
-}
+// resource storage 'Microsoft.Storage/storageAccounts@2022-05-01' existing = {
+//   name: StorageAccount.name
+// }
 
-resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
-  name: UserIdentity.name
-}
+// resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
+//   name: UserIdentity.name
+// }
 
-resource userIdentityRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
-  name: 'roleAssignment'
-}
+// resource userIdentityRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
+//   name: 'roleAssignment'
+// }
 
 module IoT 'hub-dps.bicep' = {
   name: 'iot'
   params: {
     location: location
   }
-  dependsOn:[
+  dependsOn: [
     UserIdentity
   ]
 }
@@ -64,9 +64,9 @@ module SqlServer 'sql-server.bicep' = {
   params: {
     projectName: projectName
     location: location
-    identitySID: identity.properties.principalId
+    identitySID: UserIdentity.outputs.principalId
   }
-  dependsOn:[
+  dependsOn: [
     UserIdentity
     IoT
   ]
@@ -83,9 +83,9 @@ module Function 'function.bicep' = {
     storageId: StorageAccount.outputs.AccountId
     storageAccountName: StorageAccount.outputs.AccountName
     projectName: projectName
-    identityId: identity.id
+    identityId: UserIdentity.outputs.id
   }
-  dependsOn:[
+  dependsOn: [
     UserIdentity
     IoT
     StorageAccount
@@ -97,8 +97,8 @@ module SetupScript 'script.bicep' = {
   name: 'script'
   params: {
     functionName: Function.name
-    identityId: identity.id
-    storageAccountKey: storage.listKeys().keys[0].value
+    identityId: UserIdentity.outputs.id
+    storageAccountKey: StorageAccount.outputs.AccountKey
     storageAccountName: StorageAccount.outputs.AccountName
     projectName: projectName
     tables: tables
@@ -111,7 +111,7 @@ module SetupScript 'script.bicep' = {
   }
   dependsOn: [
     StorageAccount
-    userIdentityRoleAssignment
+    UserIdentity
     IoT
     SqlServer
     Function

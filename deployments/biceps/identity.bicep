@@ -21,3 +21,6 @@ resource UserIdentityRoleAssignment 'Microsoft.Authorization/roleAssignments@202
     principalType: 'ServicePrincipal'
   }
 }
+
+output id string = UserIdentity.id
+output principalId string = UserIdentity.properties.principalId
