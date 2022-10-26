@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "647726367199397993"
+      "templateHash": "13531585257873625172"
     }
   },
   "parameters": {
@@ -36,43 +36,20 @@
     }
   },
   "variables": {
-    "ownerRoleId": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
-    "userId": "[take(format('{0}id{1}', parameters('projectName'), uniqueString(resourceGroup().id)), 20)]",
-    "ownerRoleAssignment": "[guid(variables('userId'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('ownerRoleId')))]",
     "dpsScript": "[take(format('{0}dps{1}script', parameters('projectName'), uniqueString(resourceGroup().id)), 20)]",
     "enrollmentGroupId": "[take(format('{0}dps{1}eg', parameters('projectName'), uniqueString(resourceGroup().id)), 20)]"
   },
   "resources": [
     {
-      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-      "apiVersion": "2022-01-31-preview",
-      "name": "[variables('userId')]",
-      "location": "[parameters('location')]"
-    },
-    {
-      "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2022-04-01",
-      "scope": "[format('Microsoft.ManagedIdentity/userAssignedIdentities/{0}', variables('userId'))]",
-      "name": "[variables('ownerRoleAssignment')]",
-      "properties": {
-        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('ownerRoleId'))]",
-        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))).principalId]",
-        "principalType": "ServicePrincipal"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))]"
-      ]
-    },
-    {
       "type": "Microsoft.Resources/deploymentScripts",
       "apiVersion": "2020-10-01",
       "name": "[variables('dpsScript')]",
-      "kind": "AzureCLI",
+      "kind": "AzurePowerShell",
       "location": "[parameters('location')]",
       "identity": {
         "type": "UserAssigned",
         "userAssignedIdentities": {
-          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId')))]": {}
+          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'identity'))]": {}
         }
       },
       "properties": {
@@ -80,20 +57,84 @@
           "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', 'storage'), '2022-05-01').keys[0].value]",
           "storageAccountName": "[reference(resourceId('Microsoft.Resources/deployments', 'storage')).outputs.AccountName.value]"
         },
-        "azCliVersion": "2.40.0",
+        "azPowerShellVersion": "ubuntu-20.04",
         "cleanupPreference": "OnSuccess",
         "timeout": "PT30M",
         "retentionInterval": "P1D",
-        "scriptContent": "[format('az config set extension.use_dynamic_install=yes_without_prompt && az login --identity && az iot dps enrollment-group create -g {0} --dps-name {1} --enrollment-id {2} --primary-key {3} --secondary-key {4} --subscription {5}', resourceGroup().name, reference(resourceId('Microsoft.Resources/deployments', 'iot')).outputs.DPSName.value, variables('enrollmentGroupId'), parameters('primaryKey'), parameters('secondaryKey'), subscription().subscriptionId)]"
+        "primaryScriptUri": "https://raw.githubusercontent.com/lucadruda/iotc-solution-migrator/main/deployments/scripts/config.sh"
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'func')]",
         "[resourceId('Microsoft.Resources/deployments', 'iot')]",
         "[resourceId('Microsoft.Resources/deployments', 'sql')]",
         "[resourceId('Microsoft.Resources/deployments', 'storage')]",
-        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))]",
-        "[extensionResourceId(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId')), 'Microsoft.Authorization/roleAssignments', variables('ownerRoleAssignment'))]"
+        "[resourceId('Microsoft.Resources/deployments', 'identity')]"
       ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "identity",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "projectName": {
+            "value": "[parameters('projectName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.11.1.770",
+              "templateHash": "17382535905467855362"
+            }
+          },
+          "parameters": {
+            "projectName": {
+              "type": "string",
+              "defaultValue": "contoso",
+              "maxLength": 11,
+              "minLength": 1,
+              "metadata": {
+                "description": "Define the project name or prefix for all objects."
+              }
+            }
+          },
+          "variables": {
+            "ownerRoleId": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
+            "userId": "[take(format('{0}id{1}', parameters('projectName'), uniqueString(resourceGroup().id)), 20)]",
+            "ownerRoleAssignment": "[guid(variables('userId'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('ownerRoleId')))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+              "apiVersion": "2022-01-31-preview",
+              "name": "[variables('userId')]",
+              "location": "[resourceGroup().location]"
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.ManagedIdentity/userAssignedIdentities/{0}', variables('userId'))]",
+              "name": "[variables('ownerRoleAssignment')]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('ownerRoleId'))]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))).principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))]"
+              ]
+            }
+          ]
+        }
+      }
     },
     {
       "type": "Microsoft.Resources/deployments",
@@ -202,7 +243,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "14563159910842380891"
+              "templateHash": "12232945746270225589"
             }
           },
           "parameters": {
@@ -322,7 +363,7 @@
             },
             "EventHubCS": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName'))).eventHubEndpoints.events.endpoint]"
+              "value": "[format('{0};SharedAccessKeyName=iothubowner;SharedAccessKey={1}', reference(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName'))).eventHubEndpoints.events.endpoint, listkeys(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName')), '2021-07-02').value[0].primaryKey)]"
             },
             "HubOwnerCS": {
               "type": "string",
@@ -360,7 +401,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "3247931847814569972"
+              "templateHash": "12782278305720626692"
             }
           },
           "parameters": {
@@ -394,6 +435,18 @@
                 "tier": "GeneralPurpose",
                 "capacity": 1,
                 "family": "Gen5"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Sql/servers/firewallRules",
+              "apiVersion": "2022-05-01-preview",
+              "name": "[format('{0}/{1}', variables('serverName'), 'AllowAllWindowsAzureIps')]",
+              "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
               },
               "dependsOn": [
                 "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
@@ -477,7 +530,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "13583332131796021947"
+              "templateHash": "6461604628406209985"
             }
           },
           "parameters": {
@@ -500,20 +553,6 @@
               "type": "string",
               "metadata": {
                 "description": "The storage resource Id"
-              }
-            },
-            "repoUrl": {
-              "type": "string",
-              "defaultValue": "https://github.com/lucadruda/iotc-solution-migrator.git",
-              "metadata": {
-                "description": "Repository url."
-              }
-            },
-            "functionBranch": {
-              "type": "string",
-              "defaultValue": "main",
-              "metadata": {
-                "description": "Repository branch."
               }
             },
             "sqlEndpoint": {
@@ -551,26 +590,20 @@
           },
           "resources": [
             {
-              "type": "Microsoft.Web/sites/sourcecontrols",
-              "apiVersion": "2022-03-01",
-              "name": "[format('{0}/{1}', variables('functionName'), 'web')]",
-              "properties": {
-                "repoUrl": "[parameters('repoUrl')]",
-                "branch": "[parameters('functionBranch')]",
-                "isManualIntegration": true
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', variables('functionName'))]"
-              ]
-            },
-            {
               "type": "Microsoft.Web/serverfarms",
               "apiVersion": "2022-03-01",
               "name": "[variables('hostingName')]",
               "location": "[parameters('location')]",
+              "kind": "functionapp,linux",
               "sku": {
                 "tier": "Dynamic",
-                "name": "Y1"
+                "name": "Y1",
+                "size": "Y1",
+                "family": "Y1",
+                "capacity": 0
+              },
+              "properties": {
+                "reserved": true
               }
             },
             {
@@ -578,14 +611,23 @@
               "apiVersion": "2022-03-01",
               "name": "[variables('functionName')]",
               "location": "[parameters('location')]",
-              "kind": "functionapp",
+              "kind": "functionapp,linux",
               "identity": {
                 "type": "SystemAssigned"
               },
               "properties": {
                 "httpsOnly": true,
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingName'))]",
+                "isXenon": false,
+                "hyperV": false,
                 "siteConfig": {
+                  "linuxFxVersion": "node|16",
+                  "cors": {
+                    "allowedOrigins": [
+                      "*"
+                    ],
+                    "supportCredentials": false
+                  },
                   "appSettings": [
                     {
                       "name": "AzureWebJobsStorage",
@@ -597,7 +639,7 @@
                     },
                     {
                       "name": "FUNCTIONS_EXTENSION_VERSION",
-                      "value": "~2"
+                      "value": "~4"
                     },
                     {
                       "name": "WEBSITE_NODE_DEFAULT_VERSION",

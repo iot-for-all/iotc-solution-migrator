@@ -28,8 +28,8 @@ pip install -q mssql-cli
 # Setup DPS
 az config set extension.use_dynamic_install=yes_without_prompt
 az login --identity
-az account list
-# az iot dps enrollment-group create -g "$RESOURCE_GROUP" --dps-name "$DPSName" --enrollment-id "$ENROLLMENT_GROUP_ID" --primary-key "$ENROLLMENT_PRIMARY_KEY" --secondary-key "$ENROLLMENT_SECONDARY_KEY" --subscription "$SUBSCRIPTION_ID"
+az account set --subscription "$SUBSCRIPTION_ID"
+az iot dps enrollment-group create -g "$RESOURCE_GROUP" --dps-name "$DPS_RESOURCE_NAME" --enrollment-id "$DPS_ENROLLMENT_NAME" --primary-key "$DPS_ENROLLMENT_PRIMARY_KEY" --secondary-key "$DPS_ENROLLMENT_SECONDARY_KEY" --subscription "$SUBSCRIPTION_ID"
 
 # Add Azure function code
 ## Basically adding the right bindings to function.json
@@ -41,7 +41,7 @@ npm install
 npm run generate-config
 
 # Deploy azure function
-func azure functionapp publish "$FUNCTIONAPP_NAME" --subscription "$SUBSCRIPTION_ID"
+func azure functionapp publish "$FUNCTIONAPP_NAME" --subscription "$SUBSCRIPTION_ID" --typescript
 
 rm -rf /tmp/setup
 

@@ -5,6 +5,8 @@ param projectName string = 'contoso'
 
 param location string = resourceGroup().location
 
+param identitySID string
+
 var serverName = take('${projectName}sql${uniqueString(resourceGroup().id)}', 20)
 var databaseName = 'solutiondb'
 var adminLoginPassword = '${toUpper(take(projectName, 4))}_${take(uniqueString(resourceGroup().id), 8)}@'
@@ -19,13 +21,18 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
     administratorLogin: 'solutionsqladmin'
     administratorLoginPassword: adminLoginPassword
     administrators: {
-
+      administratorType: 'ActiveDirectory'
+      azureADOnlyAuthentication: false
+      principalType: 'Application'
+      sid: identitySID
+      tenantId: subscription().tenantId
     }
     minimalTlsVersion: '1.2'
     restrictOutboundNetworkAccess: 'Disabled'
     publicNetworkAccess: 'Enabled'
     version: '12.0'
   }
+
   resource Database 'databases@2022-05-01-preview' = {
     location: location
     name: databaseName
@@ -36,9 +43,14 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
       family: 'Gen5'
     }
   }
+  resource FirewallRule1 'firewallRules@2022-05-01-preview' = {
+    name: 'AllowAllWindowsAzureIps'
+    properties: {
+      startIpAddress: '0.0.0.0'
+      endIpAddress: '0.0.0.0'
+    }
+  }
 }
-
-
 
 output sqlEndpoint string = SqlServer.properties.fullyQualifiedDomainName
 output sqlDatabase string = databaseName

@@ -79,10 +79,9 @@ resource DPS 'Microsoft.Devices/provisioningServices@2021-10-15' = {
   }
 }
 
-
-output ScopeId string = DPS.properties.idScope
-output EventHubCS string = IoTHub.properties.eventHubEndpoints.events.endpoint
-
 var HubOwnerKey = IoTHub.listkeys().value[0].primaryKey
+output ScopeId string = DPS.properties.idScope
+output EventHubCS string = '${IoTHub.properties.eventHubEndpoints.events.endpoint};SharedAccessKeyName=iothubowner;SharedAccessKey=${HubOwnerKey}'
+
 output HubOwnerCS string = 'HostName=${IoTHub.properties.hostName};SharedAccessKeyName=iothubowner;SharedAccessKey=${HubOwnerKey}'
 output DPSName string = dpsName

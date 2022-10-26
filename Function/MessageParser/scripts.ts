@@ -3,6 +3,7 @@ import * as path from 'path'
 
 async function generateConfigFile(tables: string[]) {
     const filePath = path.join(__dirname, '../..', 'MessageParser', 'function.json');
+    console.log(filePath);
     const configStr = (await fs.readFile(filePath)).toString();
     console.log(configStr);
     const config = JSON.parse(configStr);

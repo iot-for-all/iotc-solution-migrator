@@ -5,10 +5,18 @@ param projectName string = 'contoso'
 
 var accountName = take('${projectName}sa${uniqueString(resourceGroup().id)}', 20)
 param location string = resourceGroup().location
+@description('The user managed identity id')
+param identityId string
 
 resource StorageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: accountName
   location: location
+  identity:{
+    type:'SystemAssigned,UserAssigned'
+    userAssignedIdentities: {
+      '${identityId}': {}
+    }
+  }
   sku: {
     name: 'Standard_LRS'
   }

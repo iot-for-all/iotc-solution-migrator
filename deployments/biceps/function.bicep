@@ -9,12 +9,6 @@ param storageAccountName string
 @description('The storage resource Id')
 param storageId string
 
-@description('Repository url.')
-param repoUrl string = 'https://github.com/lucadruda/iotc-solution-migrator.git'
-
-@description('Repository branch.')
-param functionBranch string = 'main'
-
 @description('Sql server endpoint.')
 param sqlEndpoint string
 
@@ -29,6 +23,9 @@ param iothubEventHubCS string
 @secure()
 param iothubOwnerCS string
 
+@description('The user managed identity id')
+param identityId string
+
 var hostingName = take('${projectName}host${uniqueString(resourceGroup().id)}', 20)
 var functionName = take('${projectName}fn${uniqueString(resourceGroup().id)}', 20)
 // var configScript = take('${projectName}fnscript${uniqueString(resourceGroup().id)}', 20)
@@ -40,23 +37,42 @@ param location string = resourceGroup().location
 resource hostingPlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: hostingName
   location: location
+  kind: 'functionapp,linux'
   sku: {
     tier: 'Dynamic'
     name: 'Y1'
+    size: 'Y1'
+    family: 'Y1'
+    capacity: 0
+  }
+  properties: {
+    reserved: true // Mandatory for linux
   }
 }
 
 resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
   name: functionName
   location: location
-  kind: 'functionapp'
+  kind: 'functionapp,linux'
   identity: {
-    type: 'SystemAssigned'
+    type: 'SystemAssigned, UserAssigned'
+    userAssignedIdentities: {
+      '${identityId}': {}
+    }
   }
   properties: {
     httpsOnly: true
     serverFarmId: hostingPlan.id
+    isXenon: false
+    hyperV: false
     siteConfig: {
+      linuxFxVersion: 'node|16'
+      cors: {
+        allowedOrigins: [
+          '*'
+        ]
+        supportCredentials: false
+      }
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
@@ -68,7 +84,7 @@ resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~2'
+          value: '~4'
         }
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
@@ -97,13 +113,15 @@ resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
       minTlsVersion: '1.2'
     }
   }
-  resource functionCodeDeploy 'sourcecontrols' = {
-    name: 'web'
-    properties: {
-      repoUrl: repoUrl
-      branch: functionBranch
-      isManualIntegration: true
-    }
-  }
+  // resource functionCodeDeploy 'sourcecontrols' = {
+  //   name: 'web'
+  //   properties: {
+  //     repoUrl: repoUrl
+  //     branch: functionBranch
+  //     isManualIntegration: true
+  //   }
+  // }
 }
 
+var funcKey = listKeys('${azureFunction.id}/host/default', azureFunction.apiVersion).functionKeys.default
+output FunctionUrl string = 'https://${azureFunction.properties.defaultHostName}/api/ModelParser?code=${funcKey}'

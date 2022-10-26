@@ -9,7 +9,7 @@ import Editor from '@monaco-editor/react';
 function App() {
   const [appUrl, setAppUrl] = useState<string>('testappluca-m3.azureiotcentral.com');
   const [apiKey, setApiKey] = useState<string>('SharedAccessSignature sr=6f9c2a10-5110-4c36-a0cf-153dc6ae4106&sig=5qWfFIoJeF3gGmH2YIwol5nJKck1zzyQcbQr7ZrR0PE%3D&skn=Postman&se=1696431881954');
-  const [fnUrl, setFnUrl] = useState<string>('https://solution-fn.azurewebsites.net/api/ModelParser?code=lIBhXHT5-OJOrZVDlHdEwPhuhJV5ybf0zxgrJmGBEn0IAzFuqr9V3Q==');
+  const [fnUrl, setFnUrl] = useState<string>('https://iotcfnjhwz2sbesnqs6.azurewebsites.net/api/ModelParser?code=yJ7_Ok_OlVkljObhY0miZLhJ2bIwmbpoTGBCydFeBuKEAzFujk1Nnw==');
   const [result, setResult] = useState<any[]>();
   const [templatesLoading, { setTrue: startLoadingtemplates, setFalse: stopLoadingTemplates }] = useBoolean(false);
 

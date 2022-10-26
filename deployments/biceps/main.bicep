@@ -13,7 +13,9 @@ param secondaryKey string
 
 param location string = resourceGroup().location
 
-var dpsScript = take('${projectName}dps${uniqueString(resourceGroup().id)}script', 20)
+@description('List of table names')
+param tables array = []
+
 var enrollmentGroupId = take('${projectName}dps${uniqueString(resourceGroup().id)}eg', 20)
 
 module UserIdentity 'identity.bicep' = {
@@ -28,6 +30,7 @@ module StorageAccount 'storage.bicep' = {
   params: {
     projectName: projectName
     location: location
+    identityId: identity.id
   }
 }
 
@@ -55,6 +58,7 @@ module SqlServer 'sql-server.bicep' = {
   params: {
     projectName: projectName
     location: location
+    identitySID: identity.properties.principalId
   }
 }
 
@@ -69,30 +73,25 @@ module Function 'function.bicep' = {
     storageId: StorageAccount.outputs.AccountId
     storageAccountName: StorageAccount.outputs.AccountName
     projectName: projectName
-    // userIdentityId: UserIdentity.id
+    identityId: identity.id
   }
 }
 
-resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  kind: 'AzureCLI'
-  location: location
-  name: dpsScript
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${identity.id}': {}
+module SetupScript 'script.bicep' = {
+  name: 'script'
+  params: {
+    functionName: Function.name
+    identityId: identity.id
+    storageAccountKey: storage.listKeys().keys[0].value
+    storageAccountName: StorageAccount.outputs.AccountName
+    projectName: projectName
+    tables: tables
+    dpsEnrollment: {
+      resourceName: IoT.outputs.DPSName
+      enrollmentName: enrollmentGroupId
+      primaryKey: primaryKey
+      secondaryKey: secondaryKey
     }
-  }
-  properties: {
-    storageAccountSettings: {
-      storageAccountKey: storage.listKeys().keys[0].value
-      storageAccountName: StorageAccount.outputs.AccountName
-    }
-    azCliVersion: '2.40.0'
-    cleanupPreference: 'OnSuccess'
-    timeout: 'PT30M'
-    retentionInterval: 'P1D'
-    scriptContent: 'az config set extension.use_dynamic_install=yes_without_prompt && az login --identity && az iot dps enrollment-group create -g ${resourceGroup().name} --dps-name ${IoT.outputs.DPSName} --enrollment-id ${enrollmentGroupId} --primary-key ${primaryKey} --secondary-key ${secondaryKey} --subscription ${subscription().subscriptionId}'
   }
   dependsOn: [
     StorageAccount
@@ -102,3 +101,6 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     Function
   ]
 }
+
+output FunctionUrl string = Function.outputs.FunctionUrl
+output ScopeId string = IoT.outputs.ScopeId
