@@ -21,6 +21,7 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
     administratorLogin: 'solutionsqladmin'
     administratorLoginPassword: adminLoginPassword
     administrators: {
+      login: 'solutionadmin'
       administratorType: 'ActiveDirectory'
       azureADOnlyAuthentication: false
       principalType: 'Application'
@@ -48,6 +49,13 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
     properties: {
       startIpAddress: '0.0.0.0'
       endIpAddress: '0.0.0.0'
+    }
+  }
+  resource FirewallRule2 'firewallRules@2022-05-01-preview' = {
+    name: 'AllowAll'
+    properties: {
+      startIpAddress: '0.0.0.0'
+      endIpAddress: '255.255.255.255'
     }
   }
 }
