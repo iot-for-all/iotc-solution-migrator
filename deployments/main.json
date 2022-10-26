@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "3746659708503817773"
+      "templateHash": "8847909897593525160"
     }
   },
   "parameters": {
@@ -411,7 +411,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "3536977580587036432"
+              "templateHash": "7150259029870011031"
             }
           },
           "parameters": {
@@ -466,6 +466,18 @@
               ]
             },
             {
+              "type": "Microsoft.Sql/servers/firewallRules",
+              "apiVersion": "2022-05-01-preview",
+              "name": "[format('{0}/{1}', variables('serverName'), 'AllowAll-Unsafe')]",
+              "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "255.255.255.255"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('serverName'))]"
+              ]
+            },
+            {
               "type": "Microsoft.Sql/servers",
               "apiVersion": "2022-05-01-preview",
               "name": "[variables('serverName')]",
@@ -477,6 +489,7 @@
                 "administratorLogin": "solutionsqladmin",
                 "administratorLoginPassword": "[variables('adminLoginPassword')]",
                 "administrators": {
+                  "login": "solutionadmin",
                   "administratorType": "ActiveDirectory",
                   "azureADOnlyAuthentication": false,
                   "principalType": "Application",

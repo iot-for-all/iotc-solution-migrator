@@ -52,7 +52,7 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
     }
   }
   resource FirewallRule2 'firewallRules@2022-05-01-preview' = {
-    name: 'AllowAll'
+    name: 'AllowAll-Unsafe'
     properties: {
       startIpAddress: '0.0.0.0'
       endIpAddress: '255.255.255.255'
