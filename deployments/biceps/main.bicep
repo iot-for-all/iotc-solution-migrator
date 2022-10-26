@@ -53,6 +53,7 @@ module IoT 'hub-dps.bicep' = {
   name: 'iot'
   params: {
     location: location
+    projectName: projectName
   }
   dependsOn: [
     UserIdentity
@@ -96,7 +97,7 @@ module Function 'function.bicep' = {
 module SetupScript 'script.bicep' = {
   name: 'script'
   params: {
-    functionName: Function.name
+    functionName: Function.outputs.FunctionName
     identityId: UserIdentity.outputs.id
     storageAccountKey: StorageAccount.outputs.AccountKey
     storageAccountName: StorageAccount.outputs.AccountName

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "8847909897593525160"
+      "templateHash": "9398026923498321070"
     }
   },
   "parameters": {
@@ -238,6 +238,9 @@
         "parameters": {
           "location": {
             "value": "[variables('location')]"
+          },
+          "projectName": {
+            "value": "[parameters('projectName')]"
           }
         },
         "template": {
@@ -569,7 +572,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "7320386351419267704"
+              "templateHash": "2341392080801293184"
             }
           },
           "parameters": {
@@ -723,6 +726,10 @@
             }
           ],
           "outputs": {
+            "FunctionName": {
+              "type": "string",
+              "value": "[variables('functionName')]"
+            },
             "FunctionUrl": {
               "type": "string",
               "value": "[format('https://{0}/api/ModelParser?code={1}', reference(resourceId('Microsoft.Web/sites', variables('functionName'))).defaultHostName, listKeys(format('{0}/host/default', resourceId('Microsoft.Web/sites', variables('functionName'))), '2022-03-01').functionKeys.default)]"
@@ -748,7 +755,7 @@
         "mode": "Incremental",
         "parameters": {
           "functionName": {
-            "value": "func"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'func')).outputs.FunctionName.value]"
           },
           "identityId": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]"

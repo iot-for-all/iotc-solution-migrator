@@ -124,4 +124,5 @@ resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
 }
 
 var funcKey = listKeys('${azureFunction.id}/host/default', azureFunction.apiVersion).functionKeys.default
+output FunctionName string = azureFunction.name
 output FunctionUrl string = 'https://${azureFunction.properties.defaultHostName}/api/ModelParser?code=${funcKey}'
