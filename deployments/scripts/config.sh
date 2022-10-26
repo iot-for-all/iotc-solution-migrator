@@ -1,4 +1,8 @@
 #!/bin/bash
+
+mkdir -p /tmp/setup
+cd /tmp/setup
+
 apt-get update
 apt-get install -y curl python3-pip git jq
 curl -sL https://aka.ms/InstallAzureCLIDeb | bash
@@ -39,5 +43,6 @@ npm run generate-config
 # Deploy azure function
 func azure functionapp publish "$FUNCTIONAPP_NAME" --subscription "$SUBSCRIPTION_ID"
 
+rm -rf /tmp/setup
 
 # setup sql server
