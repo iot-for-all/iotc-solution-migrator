@@ -15,12 +15,6 @@ var adminLoginPassword = '${toUpper(take(projectName, 4))}_${take(uniqueString(r
 resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   location: location
   name: serverName
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${identity.Id}': {}
-    }
-  }
   properties: {
     administratorLogin: 'solutionsqladmin'
     administratorLoginPassword: adminLoginPassword

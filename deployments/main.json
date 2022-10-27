@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "4521791590291105041"
+      "templateHash": "17651464460215921260"
     }
   },
   "parameters": {
@@ -441,7 +441,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "8883026187912340450"
+              "templateHash": "12037031514398613109"
             }
           },
           "parameters": {
@@ -521,12 +521,6 @@
               "apiVersion": "2022-05-01-preview",
               "name": "[variables('serverName')]",
               "location": "[parameters('location')]",
-              "identity": {
-                "type": "UserAssigned",
-                "userAssignedIdentities": {
-                  "[format('{0}', parameters('identity').Id)]": {}
-                }
-              },
               "properties": {
                 "administratorLogin": "solutionsqladmin",
                 "administratorLoginPassword": "[variables('adminLoginPassword')]",
