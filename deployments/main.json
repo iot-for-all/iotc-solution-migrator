@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "9398026923498321070"
+      "templateHash": "1544642508595012120"
     }
   },
   "parameters": {
@@ -64,7 +64,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "2679106618678049695"
+              "templateHash": "2535136894577887770"
             }
           },
           "parameters": {
@@ -81,7 +81,8 @@
           "variables": {
             "ownerRoleId": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635",
             "userId": "[take(format('{0}id{1}', parameters('projectName'), uniqueString(resourceGroup().id)), 20)]",
-            "ownerRoleAssignment": "[guid(variables('userId'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('ownerRoleId')))]"
+            "ownerRoleAssignment": "[guid(variables('userId'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('ownerRoleId')))]",
+            "rgRoleAssignment": "[guid(resourceGroup().name, subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('ownerRoleId')))]"
           },
           "resources": [
             {
@@ -95,6 +96,19 @@
               "apiVersion": "2022-04-01",
               "scope": "[format('Microsoft.ManagedIdentity/userAssignedIdentities/{0}', variables('userId'))]",
               "name": "[variables('ownerRoleAssignment')]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('ownerRoleId'))]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))).principalId]",
+                "principalType": "ServicePrincipal"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "name": "[variables('rgRoleAssignment')]",
               "properties": {
                 "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('ownerRoleId'))]",
                 "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))).principalId]",
@@ -403,8 +417,11 @@
           "location": {
             "value": "[variables('location')]"
           },
-          "identitySID": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.principalId.value]"
+          "identity": {
+            "value": {
+              "principalId": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.principalId.value]",
+              "Id": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]"
+            }
           }
         },
         "template": {
@@ -414,7 +431,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "7150259029870011031"
+              "templateHash": "7869957774787955234"
             }
           },
           "parameters": {
@@ -431,8 +448,11 @@
               "type": "string",
               "defaultValue": "[resourceGroup().location]"
             },
-            "identitySID": {
-              "type": "string"
+            "identity": {
+              "type": "object",
+              "metadata": {
+                "description": "The user managed identity id"
+              }
             }
           },
           "variables": {
@@ -446,6 +466,12 @@
               "apiVersion": "2022-05-01-preview",
               "name": "[format('{0}/{1}', variables('serverName'), variables('databaseName'))]",
               "location": "[parameters('location')]",
+              "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', parameters('identity').Id)]": {}
+                }
+              },
               "sku": {
                 "name": "GP_S_Gen5",
                 "tier": "GeneralPurpose",
@@ -496,7 +522,7 @@
                   "administratorType": "ActiveDirectory",
                   "azureADOnlyAuthentication": false,
                   "principalType": "Application",
-                  "sid": "[parameters('identitySID')]",
+                  "sid": "[parameters('identity').principalId]",
                   "tenantId": "[subscription().tenantId]"
                 },
                 "minimalTlsVersion": "1.2",

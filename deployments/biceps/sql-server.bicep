@@ -5,7 +5,8 @@ param projectName string = 'contoso'
 
 param location string = resourceGroup().location
 
-param identitySID string
+@description('The user managed identity id')
+param identity object
 
 var serverName = take('${projectName}sql${uniqueString(resourceGroup().id)}', 20)
 var databaseName = 'solutiondb'
@@ -25,7 +26,7 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
       administratorType: 'ActiveDirectory'
       azureADOnlyAuthentication: false
       principalType: 'Application'
-      sid: identitySID
+      sid: identity.principalId
       tenantId: subscription().tenantId
     }
     minimalTlsVersion: '1.2'
@@ -37,6 +38,12 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   resource Database 'databases@2022-05-01-preview' = {
     location: location
     name: databaseName
+    identity:{
+      type: 'UserAssigned'
+      userAssignedIdentities: {
+        '${identity.Id}': {}
+      }
+    }
     sku: {
       name: 'GP_S_Gen5'
       tier: 'GeneralPurpose'

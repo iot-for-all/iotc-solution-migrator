@@ -65,7 +65,10 @@ module SqlServer 'sql-server.bicep' = {
   params: {
     projectName: projectName
     location: location
-    identitySID: UserIdentity.outputs.principalId
+    identity: {
+      principalId: UserIdentity.outputs.principalId
+      Id: UserIdentity.outputs.id
+    }
   }
   dependsOn: [
     UserIdentity
