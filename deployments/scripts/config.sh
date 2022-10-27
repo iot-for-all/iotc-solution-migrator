@@ -7,7 +7,7 @@ apt-get update
 apt-get install -y curl python3-pip git jq
 curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
-curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - &&
+curl -fsSL https://deb.nodesource.com/setup_lts.x | bash
 apt-get install -y nodejs
 
 node -v

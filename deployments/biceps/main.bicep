@@ -66,6 +66,8 @@ module SqlServer 'sql-server.bicep' = {
     projectName: projectName
     location: location
     identity: {
+      name: UserIdentity.outputs.name
+      clientId: UserIdentity.outputs.clientId
       principalId: UserIdentity.outputs.principalId
       Id: UserIdentity.outputs.id
     }

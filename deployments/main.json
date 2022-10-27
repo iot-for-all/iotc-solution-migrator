@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "15373524560143932880"
+      "templateHash": "4521791590291105041"
     }
   },
   "parameters": {
@@ -427,6 +427,8 @@
           },
           "identity": {
             "value": {
+              "name": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.name.value]",
+              "clientId": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.clientId.value]",
               "principalId": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.principalId.value]",
               "Id": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]"
             }
