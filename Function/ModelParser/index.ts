@@ -1,5 +1,5 @@
 import { AzureFunction, Context, HttpRequest } from '@azure/functions';
-import { DTDLCapability, DTDLComponent, DTDLDisplayName, DTDLModel, DTDLSchema, SQLColumn, SQLConfig, SQLDataType } from './types';
+import { DTDLCapability, DTDLComponent, DTDLModel, DTDLSchema, SQLColumn, SQLConfig } from './types';
 import { modelToBindingName, normalizeColumnName, writeTable } from './utils';
 import { Connection } from 'tedious';
 import { queryDatabase, connect } from './db';

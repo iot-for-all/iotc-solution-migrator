@@ -16,7 +16,10 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   location: location
   name: serverName
   identity: {
-    type: 'SystemAssigned'
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${identity.Id}': {}
+    }
   }
   properties: {
     administratorLogin: 'solutionsqladmin'
@@ -38,7 +41,7 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   resource Database 'databases@2022-05-01-preview' = {
     location: location
     name: databaseName
-    identity:{
+    identity: {
       type: 'UserAssigned'
       userAssignedIdentities: {
         '${identity.Id}': {}

@@ -12,7 +12,7 @@ resource StorageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   name: accountName
   location: location
   identity: {
-    type: 'SystemAssigned,UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
       '${identityId}': {}
     }

@@ -15,6 +15,26 @@ function App() {
 
   return (
     <div className="App">
+      {cardState.show && (
+        <div
+          style={{
+            position: "absolute",
+            left: cardState.pagePosition?.[0],
+            top: cardState.pagePosition?.[1],
+            height: "100%",
+          }}
+        >
+          <HoverCard
+            expandingCardProps={expandingCardProps}
+            cardDismissDelay={300}
+            trapFocus
+            sticky
+            instantOpenOnClick
+          >
+            <div style={{ height: 20, width: 20 }}></div>
+          </HoverCard>
+        </div>
+      )}
       <TextField label='App url' className='inputField' value={appUrl} onChange={(_, t) => setAppUrl(t!)} />
       <TextField label='Api Key' className='inputField' value={apiKey} onChange={(_, t) => setApiKey(t!)} />
       <TextField label='Function Url' className='inputField' value={fnUrl} onChange={(_, t) => setFnUrl(t!)} />

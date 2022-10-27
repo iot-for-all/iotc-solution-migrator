@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "1544642508595012120"
+      "templateHash": "10226649143425450166"
     }
   },
   "parameters": {
@@ -159,7 +159,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "2903534875894806265"
+              "templateHash": "1221152622407931348"
             }
           },
           "parameters": {
@@ -209,7 +209,7 @@
               "name": "[variables('accountName')]",
               "location": "[parameters('location')]",
               "identity": {
-                "type": "SystemAssigned,UserAssigned",
+                "type": "UserAssigned",
                 "userAssignedIdentities": {
                   "[format('{0}', parameters('identityId'))]": {}
                 }
@@ -264,7 +264,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "12232945746270225589"
+              "templateHash": "18131439444970327457"
             }
           },
           "parameters": {
@@ -384,7 +384,7 @@
             },
             "EventHubCS": {
               "type": "string",
-              "value": "[format('{0};SharedAccessKeyName=iothubowner;SharedAccessKey={1}', reference(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName'))).eventHubEndpoints.events.endpoint, listkeys(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName')), '2021-07-02').value[0].primaryKey)]"
+              "value": "[format('Endpoint={0};SharedAccessKeyName=iothubowner;SharedAccessKey={1}', reference(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName'))).eventHubEndpoints.events.endpoint, listkeys(resourceId('Microsoft.Devices/IotHubs', variables('iotHubName')), '2021-07-02').value[0].primaryKey)]"
             },
             "HubOwnerCS": {
               "type": "string",
@@ -431,7 +431,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "7869957774787955234"
+              "templateHash": "10824103241238074970"
             }
           },
           "parameters": {
@@ -512,7 +512,10 @@
               "name": "[variables('serverName')]",
               "location": "[parameters('location')]",
               "identity": {
-                "type": "SystemAssigned"
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', parameters('identity').Id)]": {}
+                }
               },
               "properties": {
                 "administratorLogin": "solutionsqladmin",
@@ -598,7 +601,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "2341392080801293184"
+              "templateHash": "5559678172795116920"
             }
           },
           "parameters": {
@@ -687,7 +690,7 @@
               "location": "[parameters('location')]",
               "kind": "functionapp,linux",
               "identity": {
-                "type": "SystemAssigned, UserAssigned",
+                "type": "UserAssigned",
                 "userAssignedIdentities": {
                   "[format('{0}', parameters('identityId'))]": {}
                 }
