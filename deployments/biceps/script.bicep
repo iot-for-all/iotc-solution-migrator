@@ -1,5 +1,7 @@
-param identityId string
+param identity object
 
+param sqlEndpoint string
+param sqlDatabase string
 param functionName string
 param tables array = []
 
@@ -20,7 +22,7 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${identityId}': {}
+      '${identity.Id}': {}
     }
   }
   properties: {
@@ -69,6 +71,18 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       {
         name: 'DPS_ENROLLMENT_SECONDARY_KEY'
         value: dpsEnrollment.secondaryKey
+      }
+      {
+        name: 'IDENTITY_NAME'
+        value: identity.name
+      }
+      {
+        name: 'SQL_ENDPOINT'
+        value: sqlEndpoint
+      }
+      {
+        name: 'SQL_DATABASE'
+        value: sqlDatabase
       }
     ]
   }

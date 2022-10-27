@@ -89,7 +89,10 @@ module Function 'function.bicep' = {
     storageId: StorageAccount.outputs.AccountId
     storageAccountName: StorageAccount.outputs.AccountName
     projectName: projectName
-    identityId: UserIdentity.outputs.id
+    identity: {
+      Id: UserIdentity.outputs.id
+      clientId: UserIdentity.outputs.clientId
+    }
   }
   dependsOn: [
     UserIdentity
@@ -103,7 +106,10 @@ module SetupScript 'script.bicep' = {
   name: 'script'
   params: {
     functionName: Function.outputs.FunctionName
-    identityId: UserIdentity.outputs.id
+    identity: {
+      Id: UserIdentity.outputs.id
+      name: UserIdentity.outputs.name
+    }
     storageAccountKey: StorageAccount.outputs.AccountKey
     storageAccountName: StorageAccount.outputs.AccountName
     projectName: projectName
@@ -114,6 +120,8 @@ module SetupScript 'script.bicep' = {
       primaryKey: primaryKey
       secondaryKey: secondaryKey
     }
+    sqlDatabase: SqlServer.outputs.sqlDatabase
+    sqlEndpoint: SqlServer.outputs.sqlEndpoint
   }
   dependsOn: [
     StorageAccount

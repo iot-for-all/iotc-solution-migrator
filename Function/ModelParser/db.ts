@@ -3,7 +3,9 @@ import { DefaultAzureCredential } from "@azure/identity";
 import { Connection, Request } from "tedious";
 
 export async function connect(context: Context) {
-    const cred = new DefaultAzureCredential();
+    const cred = new DefaultAzureCredential({
+        managedIdentityClientId: process.env['IDENTITY_CLIENT_ID'] || undefined
+    });
     const token = (await cred.getToken("https://database.windows.net/.default")).token;
     const config = {
         server: process.env['SQL_ENDPOINT'],

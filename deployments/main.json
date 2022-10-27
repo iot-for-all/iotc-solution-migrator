@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "17651464460215921260"
+      "templateHash": "16414021060814422131"
     }
   },
   "parameters": {
@@ -594,8 +594,11 @@
           "projectName": {
             "value": "[parameters('projectName')]"
           },
-          "identityId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]"
+          "identity": {
+            "value": {
+              "Id": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]",
+              "clientId": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.clientId.value]"
+            }
           }
         },
         "template": {
@@ -605,7 +608,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "5559678172795116920"
+              "templateHash": "6438110333186442733"
             }
           },
           "parameters": {
@@ -654,8 +657,8 @@
                 "description": "IoTHub Owner connection string."
               }
             },
-            "identityId": {
-              "type": "string",
+            "identity": {
+              "type": "object",
               "metadata": {
                 "description": "The user managed identity id"
               }
@@ -696,7 +699,7 @@
               "identity": {
                 "type": "UserAssigned",
                 "userAssignedIdentities": {
-                  "[format('{0}', parameters('identityId'))]": {}
+                  "[format('{0}', parameters('identity').Id)]": {}
                 }
               },
               "properties": {
@@ -748,6 +751,10 @@
                     {
                       "name": "IoTHubOwnerCS",
                       "value": "[parameters('iothubOwnerCS')]"
+                    },
+                    {
+                      "name": "AZURE_CLIENT_ID",
+                      "value": "[parameters('identity').clientId]"
                     }
                   ],
                   "minTlsVersion": "1.2"
@@ -790,8 +797,11 @@
           "functionName": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'func')).outputs.FunctionName.value]"
           },
-          "identityId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]"
+          "identity": {
+            "value": {
+              "Id": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]",
+              "name": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.name.value]"
+            }
           },
           "storageAccountKey": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage')).outputs.AccountKey.value]"
@@ -812,6 +822,12 @@
               "primaryKey": "[parameters('primaryKey')]",
               "secondaryKey": "[parameters('secondaryKey')]"
             }
+          },
+          "sqlDatabase": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sqlDatabase.value]"
+          },
+          "sqlEndpoint": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sqlEndpoint.value]"
           }
         },
         "template": {
@@ -821,11 +837,17 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "16798116076858081429"
+              "templateHash": "8400283151182646778"
             }
           },
           "parameters": {
-            "identityId": {
+            "identity": {
+              "type": "object"
+            },
+            "sqlEndpoint": {
+              "type": "string"
+            },
+            "sqlDatabase": {
               "type": "string"
             },
             "functionName": {
@@ -860,7 +882,7 @@
               "identity": {
                 "type": "UserAssigned",
                 "userAssignedIdentities": {
-                  "[format('{0}', parameters('identityId'))]": {}
+                  "[format('{0}', parameters('identity').Id)]": {}
                 }
               },
               "properties": {
@@ -909,6 +931,18 @@
                   {
                     "name": "DPS_ENROLLMENT_SECONDARY_KEY",
                     "value": "[parameters('dpsEnrollment').secondaryKey]"
+                  },
+                  {
+                    "name": "IDENTITY_NAME",
+                    "value": "[parameters('identity').name]"
+                  },
+                  {
+                    "name": "SQL_ENDPOINT",
+                    "value": "[parameters('sqlEndpoint')]"
+                  },
+                  {
+                    "name": "SQL_DATABASE",
+                    "value": "[parameters('sqlDatabase')]"
                   }
                 ]
               }

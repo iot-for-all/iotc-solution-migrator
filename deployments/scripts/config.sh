@@ -44,5 +44,3 @@ npm run generate-config
 func azure functionapp publish "$FUNCTIONAPP_NAME" --subscription "$SUBSCRIPTION_ID" --typescript
 
 rm -rf /tmp/setup
-
-# setup sql server

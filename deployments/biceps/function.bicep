@@ -24,7 +24,7 @@ param iothubEventHubCS string
 param iothubOwnerCS string
 
 @description('The user managed identity id')
-param identityId string
+param identity object
 
 var hostingName = take('${projectName}host${uniqueString(resourceGroup().id)}', 20)
 var functionName = take('${projectName}fn${uniqueString(resourceGroup().id)}', 20)
@@ -57,7 +57,7 @@ resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${identityId}': {}
+      '${identity.Id}': {}
     }
   }
   properties: {
@@ -108,6 +108,10 @@ resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'IoTHubOwnerCS'
           value: iothubOwnerCS
+        }
+        {
+          name: 'AZURE_CLIENT_ID'
+          value: identity.clientId
         }
       ]
       minTlsVersion: '1.2'
