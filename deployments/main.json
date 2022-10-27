@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "10226649143425450166"
+      "templateHash": "15373524560143932880"
     }
   },
   "parameters": {
@@ -64,7 +64,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "2535136894577887770"
+              "templateHash": "3078085418355835573"
             }
           },
           "parameters": {
@@ -124,9 +124,17 @@
               "type": "string",
               "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))]"
             },
+            "name": {
+              "type": "string",
+              "value": "[variables('userId')]"
+            },
             "principalId": {
               "type": "string",
               "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))).principalId]"
+            },
+            "clientId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('userId'))).clientId]"
             }
           }
         }
@@ -431,7 +439,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "10824103241238074970"
+              "templateHash": "8883026187912340450"
             }
           },
           "parameters": {
@@ -521,11 +529,11 @@
                 "administratorLogin": "solutionsqladmin",
                 "administratorLoginPassword": "[variables('adminLoginPassword')]",
                 "administrators": {
-                  "login": "solutionadmin",
+                  "login": "[parameters('identity').name]",
                   "administratorType": "ActiveDirectory",
                   "azureADOnlyAuthentication": false,
                   "principalType": "Application",
-                  "sid": "[parameters('identity').principalId]",
+                  "sid": "[parameters('identity').clientId]",
                   "tenantId": "[subscription().tenantId]"
                 },
                 "minimalTlsVersion": "1.2",

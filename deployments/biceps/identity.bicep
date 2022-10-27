@@ -34,4 +34,6 @@ resource UserIdentityResourceGroupAssignment 'Microsoft.Authorization/roleAssign
 }
 
 output id string = UserIdentity.id
+output name string = UserIdentity.name
 output principalId string = UserIdentity.properties.principalId
+output clientId string = UserIdentity.properties.clientId

@@ -25,11 +25,11 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
     administratorLogin: 'solutionsqladmin'
     administratorLoginPassword: adminLoginPassword
     administrators: {
-      login: 'solutionadmin'
+      login: identity.name
       administratorType: 'ActiveDirectory'
       azureADOnlyAuthentication: false
       principalType: 'Application'
-      sid: identity.principalId
+      sid: identity.clientId
       tenantId: subscription().tenantId
     }
     minimalTlsVersion: '1.2'
