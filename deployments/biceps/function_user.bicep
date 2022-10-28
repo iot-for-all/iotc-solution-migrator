@@ -105,6 +105,10 @@ resource azureFunction 'Microsoft.Web/sites@2022-03-01' = {
           name: 'SQL_PASSWORD'
           value: sql.Password
         }
+        {
+          name: 'SqlConnectionString'
+          value: 'Server=tcp:${sql.Endpoint},1433;Initial Catalog=${sql.Database};Persist Security Info=False;User ID=${sql.Username};Password=${sql.Password};'
+        }
 
       ]
       minTlsVersion: '1.2'

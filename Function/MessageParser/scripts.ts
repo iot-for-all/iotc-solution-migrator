@@ -11,7 +11,8 @@ async function generateConfigFile(tables: string[]) {
         name: table,
         type: 'sql',
         direction: "out",
-        commandText: `dbo.${table}`
+        commandText: `dbo.${table}`,
+        connectionStringSetting: 'SqlConnectionString'
     }))];
     console.log(`Adding bindings: ${JSON.stringify(config.bindings)}`);
     await fs.writeFile(filePath, JSON.stringify(config, null, 2));
