@@ -78,21 +78,16 @@ module SqlServer 'sql-server.bicep' = {
   ]
 }
 
-module Function 'function.bicep' = {
+module Function 'function_user.bicep' = {
   name: 'func'
   params: {
     location: location
     iothubEventHubCS: IoT.outputs.EventHubCS
     iothubOwnerCS: IoT.outputs.HubOwnerCS
-    sqlDatabase: SqlServer.outputs.sql.Database
-    sqlEndpoint: SqlServer.outputs.sql.Endpoint
+    sql: SqlServer.outputs.sql
     storageId: StorageAccount.outputs.AccountId
     storageAccountName: StorageAccount.outputs.AccountName
     projectName: projectName
-    identity: {
-      Id: UserIdentity.outputs.id
-      clientId: UserIdentity.outputs.clientId
-    }
   }
   dependsOn: [
     UserIdentity

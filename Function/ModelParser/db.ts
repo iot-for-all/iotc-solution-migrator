@@ -1,22 +1,22 @@
 import { Context } from "@azure/functions";
 import { DefaultAzureCredential } from "@azure/identity";
-import { Connection, Request } from "tedious";
+import { Connection, ConnectionConfig, Request } from "tedious";
 
 export async function connect(context: Context) {
-    const cred = new DefaultAzureCredential({
-        managedIdentityClientId: process.env['IDENTITY_CLIENT_ID'] || undefined
-    });
-    const token = (await cred.getToken("https://database.windows.net/.default")).token;
-    const config = {
+    // const cred = new DefaultAzureCredential({
+    //     managedIdentityClientId: process.env['IDENTITY_CLIENT_ID'] || undefined
+    // });
+    // const token = (await cred.getToken("https://database.windows.net/.default")).token;
+    const config: ConnectionConfig = {
         server: process.env['SQL_ENDPOINT'],
         authentication: {
-            type: 'azure-active-directory-access-token',
             options: {
-                token
+                userName: process.env['SQL_USERNAME'],
+                password: process.env['SQL_PASSWORD']
             }
         },
         options: {
-            database: process.env["SQLDatabase"],
+            database: process.env["SQL_DATABASE"],
             encrypt: true,
             port: 1433
         }

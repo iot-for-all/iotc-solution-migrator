@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "16414021060814422131"
+      "templateHash": "4669541449163468911"
     }
   },
   "parameters": {
@@ -441,7 +441,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "12037031514398613109"
+              "templateHash": "16518977823989192346"
             }
           },
           "parameters": {
@@ -468,6 +468,7 @@
           "variables": {
             "serverName": "[take(format('{0}sql{1}', parameters('projectName'), uniqueString(resourceGroup().id)), 20)]",
             "databaseName": "solutiondb",
+            "adminLoginUsername": "solutionsqladmin",
             "adminLoginPassword": "[format('{0}_{1}@', toUpper(take(parameters('projectName'), 4)), take(uniqueString(resourceGroup().id), 8))]"
           },
           "resources": [
@@ -522,16 +523,8 @@
               "name": "[variables('serverName')]",
               "location": "[parameters('location')]",
               "properties": {
-                "administratorLogin": "solutionsqladmin",
+                "administratorLogin": "[variables('adminLoginUsername')]",
                 "administratorLoginPassword": "[variables('adminLoginPassword')]",
-                "administrators": {
-                  "login": "[parameters('identity').name]",
-                  "administratorType": "ActiveDirectory",
-                  "azureADOnlyAuthentication": false,
-                  "principalType": "Application",
-                  "sid": "[parameters('identity').clientId]",
-                  "tenantId": "[subscription().tenantId]"
-                },
                 "minimalTlsVersion": "1.2",
                 "restrictOutboundNetworkAccess": "Disabled",
                 "publicNetworkAccess": "Enabled",
@@ -540,17 +533,14 @@
             }
           ],
           "outputs": {
-            "sqlEndpoint": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Sql/servers', variables('serverName'))).fullyQualifiedDomainName]"
-            },
-            "sqlDatabase": {
-              "type": "string",
-              "value": "[variables('databaseName')]"
-            },
-            "sqlAdminPW": {
-              "type": "string",
-              "value": "[variables('adminLoginPassword')]"
+            "sql": {
+              "type": "object",
+              "value": {
+                "Endpoint": "[reference(resourceId('Microsoft.Sql/servers', variables('serverName'))).fullyQualifiedDomainName]",
+                "Database": "[variables('databaseName')]",
+                "Username": "[variables('adminLoginUsername')]",
+                "Password": "[variables('adminLoginPassword')]"
+              }
             }
           }
         }
@@ -580,10 +570,10 @@
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iot')).outputs.HubOwnerCS.value]"
           },
           "sqlDatabase": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sqlDatabase.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sql.value.Database]"
           },
           "sqlEndpoint": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sqlEndpoint.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sql.value.Endpoint]"
           },
           "storageId": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'storage')).outputs.AccountId.value]"
@@ -824,10 +814,10 @@
             }
           },
           "sqlDatabase": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sqlDatabase.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sql.value.Database]"
           },
           "sqlEndpoint": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sqlEndpoint.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sql.value.Endpoint]"
           }
         },
         "template": {

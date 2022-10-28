@@ -10,22 +10,23 @@ param identity object
 
 var serverName = take('${projectName}sql${uniqueString(resourceGroup().id)}', 20)
 var databaseName = 'solutiondb'
+var adminLoginUsername = 'solutionsqladmin'
 var adminLoginPassword = '${toUpper(take(projectName, 4))}_${take(uniqueString(resourceGroup().id), 8)}@'
 
 resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   location: location
   name: serverName
   properties: {
-    administratorLogin: 'solutionsqladmin'
+    administratorLogin: adminLoginUsername
     administratorLoginPassword: adminLoginPassword
-    administrators: {
-      login: identity.name
-      administratorType: 'ActiveDirectory'
-      azureADOnlyAuthentication: false
-      principalType: 'Application'
-      sid: identity.clientId
-      tenantId: subscription().tenantId
-    }
+    // administrators: {
+    //   login: identity.name
+    //   administratorType: 'ActiveDirectory'
+    //   azureADOnlyAuthentication: false
+    //   principalType: 'Application'
+    //   sid: identity.clientId
+    //   tenantId: subscription().tenantId
+    // }
     minimalTlsVersion: '1.2'
     restrictOutboundNetworkAccess: 'Disabled'
     publicNetworkAccess: 'Enabled'
@@ -64,6 +65,10 @@ resource SqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   }
 }
 
-output sqlEndpoint string = SqlServer.properties.fullyQualifiedDomainName
-output sqlDatabase string = databaseName
-output sqlAdminPW string = adminLoginPassword
+output sql object={
+  Endpoint: SqlServer.properties.fullyQualifiedDomainName
+  Database: databaseName
+  Username: adminLoginUsername
+  Password: adminLoginPassword
+}
+
