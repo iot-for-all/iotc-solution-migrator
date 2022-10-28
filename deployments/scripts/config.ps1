@@ -1,4 +1,4 @@
-Invoke-WebRequest -Uri "https://deb.nodesource.com/setup_lts.x" -OutFile /tmp/config.sh
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/lucadruda/iotc-solution-migrator/main/deployments/scripts/config.sh" -OutFile /tmp/config.sh
 
 bash /tmp/config.sh
 
