@@ -23,11 +23,14 @@ const IoTHubTrigger: AzureFunction = async function (context: Context, IoTHubMes
         };
         if (messageSource === MessageSources.TELEMETRY) {
             row = {
-                ...row, ...(modelId ? tables[modelToBindingName(modelId)].reduce((obj, capability) => {
+                ...row, ...(modelId ? tables[modelToBindingName(modelId)].reduce((obj, capability: string) => {
                     if (capability.indexOf('.') > 0) { // a component
-                        const [componentName, capabilityName] = capability.split('.');
-                        if (componentName === messageComponent && message[capabilityName]) {
-                            obj[capability] = message[capabilityName];
+                        const [componentName, ...capabilityName] = capability.split('.');
+                        if (componentName === messageComponent) {
+                            // also covers the case where capability is an object
+                            obj[capability] = capabilityName.reduce((msg, prop) => {
+                                return msg ? msg[prop] : undefined;
+                            }, message);
                         }
                         else {
                             obj[capability] = null
@@ -35,7 +38,9 @@ const IoTHubTrigger: AzureFunction = async function (context: Context, IoTHubMes
                     }
                     else {
                         if (message[capability]) {
-                            obj[capability] = message[capability];
+                            obj[capability] = capability.split('.').reduce((msg, prop) => {
+                                return msg ? msg[prop] : undefined;
+                            }, message);
                         }
                         else {
                             obj[capability] = null
@@ -90,7 +95,7 @@ const IoTHubTrigger: AzureFunction = async function (context: Context, IoTHubMes
                     : message
                 )
             }
-            context.bindings[`${modelToBindingName(modelId)}_props`] = row;
+            context.bindings[`${modelToBindingName(modelId)}props`] = row;
             return;
         }
         else if (messageSource === MessageSources.DIGITAL_TWIN_CHANGE) {

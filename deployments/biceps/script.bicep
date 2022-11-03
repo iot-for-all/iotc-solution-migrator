@@ -4,6 +4,7 @@ param sqlEndpoint string
 param sqlDatabase string
 param functionName string
 param tables array = []
+param eventHubName string
 
 param projectName string = 'contoso'
 
@@ -83,6 +84,10 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       {
         name: 'SQL_DATABASE'
         value: sqlDatabase
+      }
+      {
+        name: 'EVENTHUB_NAME'
+        value: eventHubName
       }
     ]
   }

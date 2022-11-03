@@ -15,7 +15,7 @@ const HttpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         catch (ex) {
             context.res = {
                 status: 500,
-                body: `Error connecting to db: ${JSON.stringify(ex)}`
+                body: `Error connecting to db: ${JSON.stringify(ex.message)}`
             }
             return;
         }
@@ -32,6 +32,7 @@ const HttpTrigger: AzureFunction = async function (context: Context, req: HttpRe
             let body = await queryDatabase(context, sqlConnection, scriptCreate);
             body += `\n${await queryDatabase(context, sqlConnection, scriptSPTelemetry)}`;
             body += `\n${await queryDatabase(context, sqlConnection, scriptSPProperties)}`;
+
             await writeTable(context, `${tableName}.json`, JSON.stringify(config.telemetry.map(c => c.name)));
             await writeTable(context, `${tableName}_props.json`, JSON.stringify(config.properties.map(c => c.name)));
             context.res = {
@@ -133,16 +134,16 @@ function parseSchema(schema: DTDLSchema, capabilityName: string, capabilityDispl
             }];
         case 'vector':
             return [{
-                name: `${name}.X`,
+                name: `${name}.x`,
                 displayName: `${displayName}.X`,
                 dataType: 'float'
             }, {
-                name: `${name}.Y`,
+                name: `${name}.y`,
                 displayName: `${displayName}.Y`,
                 dataType: 'float'
             },
             {
-                name: `${name}.Z`,
+                name: `${name}.z`,
                 displayName: `${displayName}.Z`,
                 dataType: 'float'
             }];

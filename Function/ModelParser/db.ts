@@ -3,24 +3,42 @@ import { DefaultAzureCredential } from "@azure/identity";
 import { Connection, ConnectionConfig, Request } from "tedious";
 
 export async function connect(context: Context) {
-    // const cred = new DefaultAzureCredential({
-    //     managedIdentityClientId: process.env['IDENTITY_CLIENT_ID'] || undefined
-    // });
-    // const token = (await cred.getToken("https://database.windows.net/.default")).token;
-    const config: ConnectionConfig = {
-        server: process.env['SQL_ENDPOINT'],
-        authentication: {
-            options: {
-                userName: process.env['SQL_USERNAME'],
-                password: process.env['SQL_PASSWORD']
-            }
-        },
+    const { SQL_ENDPOINT: server, SQL_DATABASE: database, SQL_USERNAME: userName, SQL_PASSWORD: password } = process.env;
+
+
+    let config: ConnectionConfig = {
+        server,
         options: {
-            database: process.env["SQL_DATABASE"],
+            database,
             encrypt: true,
             port: 1433
         }
     };
+
+    if (userName && password) {
+        config.authentication = {
+            type: 'default',
+            options: {
+                userName,
+                password
+            }
+        }
+    }
+    else {
+        const cred = new DefaultAzureCredential({
+            managedIdentityClientId: process.env['IDENTITY_CLIENT_ID']
+        });
+        const token = (await cred.getToken("https://database.windows.net/.default")).token;
+        config.authentication = {
+            type: 'azure-active-directory-access-token',
+            options: {
+                token: token,
+                clientId: process.env['IDENTITY_CLIENT_ID']
+            }
+        }
+    }
+
+
     const connection = new Connection(config);
     return new Promise<Connection>((resolve, reject) => {
         connection.on('connect', (err) => {
@@ -37,6 +55,7 @@ export async function connect(context: Context) {
     });
 
 }
+
 
 
 export async function queryDatabase(context: Context, connection: Connection, script: string | null): Promise<string> {

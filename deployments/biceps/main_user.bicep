@@ -97,6 +97,22 @@ module Function 'function_user.bicep' = {
   ]
 }
 
+module Grafana 'grafana.bicep' = {
+  name: 'grafana'
+  params: {
+    projectName: projectName
+    location: location
+    identity: {
+      Id: UserIdentity.outputs.id
+      clientId: UserIdentity.outputs.clientId
+    }
+  }
+  dependsOn: [
+    UserIdentity
+    SqlServer
+  ]
+}
+
 module SetupScript 'script.bicep' = {
   name: 'script'
   params: {
@@ -117,6 +133,7 @@ module SetupScript 'script.bicep' = {
     }
     sqlDatabase: SqlServer.outputs.sql.Database
     sqlEndpoint: SqlServer.outputs.sql.Endpoint
+    eventHubName: IoT.outputs.EventHubName
   }
   dependsOn: [
     StorageAccount

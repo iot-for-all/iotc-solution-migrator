@@ -15,7 +15,6 @@ param d2cPartitions int = 4
 var iotHubName = take('${projectName}hub${uniqueString(resourceGroup().id)}', 20)
 var dpsName = take('${projectName}dps${uniqueString(resourceGroup().id)}', 20)
 
-
 param location string = resourceGroup().location
 
 resource IoTHub 'Microsoft.Devices/IotHubs@2021-07-02' = {
@@ -34,6 +33,14 @@ resource IoTHub 'Microsoft.Devices/IotHubs@2021-07-02' = {
     }
     routing: {
       routes: [
+        {
+          name: 'Telemetry'
+          source: 'DeviceMessages'
+          endpointNames: [
+            'events'
+          ]
+          isEnabled: true
+        }
         {
           name: 'DeviceTwin'
           source: 'TwinChangeEvents'
@@ -82,6 +89,6 @@ resource DPS 'Microsoft.Devices/provisioningServices@2021-10-15' = {
 var HubOwnerKey = IoTHub.listkeys().value[0].primaryKey
 output ScopeId string = DPS.properties.idScope
 output EventHubCS string = 'Endpoint=${IoTHub.properties.eventHubEndpoints.events.endpoint};SharedAccessKeyName=iothubowner;SharedAccessKey=${HubOwnerKey}'
-
+output EventHubName string = IoTHub.properties.eventHubEndpoints.events.path
 output HubOwnerCS string = 'HostName=${IoTHub.properties.hostName};SharedAccessKeyName=iothubowner;SharedAccessKey=${HubOwnerKey}'
 output DPSName string = dpsName

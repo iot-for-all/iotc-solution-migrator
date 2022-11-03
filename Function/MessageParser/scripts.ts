@@ -14,6 +14,7 @@ async function generateConfigFile(tables: string[]) {
         commandText: `dbo.${table}`,
         connectionStringSetting: 'SqlConnectionString'
     }))];
+    config.bindings.find(binding => binding.type === 'eventHubTrigger').eventHubName = process.env['EVENTHUB_NAME']
     console.log(`Adding bindings: ${JSON.stringify(config.bindings)}`);
     await fs.writeFile(filePath, JSON.stringify(config, null, 2));
 
