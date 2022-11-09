@@ -3,13 +3,13 @@
 @maxLength(11)
 param projectName string = 'contoso'
 
-@description('The Enrollment group primary key')
+@description('The Azure IoT Central app URL')
 @secure()
-param primaryKey string
+param iotcAppUrl string
 
-@description('The Enrollment group secondary key')
+@description('The Azure IoT Central API Key')
 @secure()
-param secondaryKey string
+param iotcApiKey string
 
 var location = resourceGroup().location
 
@@ -36,18 +36,6 @@ module StorageAccount 'storage.bicep' = {
     UserIdentity
   ]
 }
-
-// resource storage 'Microsoft.Storage/storageAccounts@2022-05-01' existing = {
-//   name: StorageAccount.name
-// }
-
-// resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
-//   name: UserIdentity.name
-// }
-
-// resource userIdentityRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' existing = {
-//   name: 'roleAssignment'
-// }
 
 module IoT 'hub-dps.bicep' = {
   name: 'iot'
@@ -124,13 +112,10 @@ module SetupScript 'script.bicep' = {
     storageAccountKey: StorageAccount.outputs.AccountKey
     storageAccountName: StorageAccount.outputs.AccountName
     projectName: projectName
-    tables: tables
-    dpsEnrollment: {
-      resourceName: IoT.outputs.DPSName
-      enrollmentName: enrollmentGroupId
-      primaryKey: primaryKey
-      secondaryKey: secondaryKey
-    }
+    dpsResourceName: IoT.outputs.DPSName
+    functionUrl: Function.outputs.FunctionUrl
+    iotcApiKey: iotcApiKey
+    iotcAppUrl: iotcAppUrl
     sqlDatabase: SqlServer.outputs.sql.Database
     sqlEndpoint: SqlServer.outputs.sql.Endpoint
     eventHubName: IoT.outputs.EventHubName

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "16597721735950732406"
+      "templateHash": "3148673373464548503"
     }
   },
   "parameters": {
@@ -18,16 +18,16 @@
         "description": "Define the project name or prefix for all objects."
       }
     },
-    "primaryKey": {
+    "iotcAppUrl": {
       "type": "secureString",
       "metadata": {
-        "description": "The Enrollment group primary key"
+        "description": "The Azure IoT Central app URL"
       }
     },
-    "secondaryKey": {
+    "iotcApiKey": {
       "type": "secureString",
       "metadata": {
-        "description": "The Enrollment group secondary key"
+        "description": "The Azure IoT Central API Key"
       }
     },
     "tables": {
@@ -891,16 +891,17 @@
           "projectName": {
             "value": "[parameters('projectName')]"
           },
-          "tables": {
-            "value": "[parameters('tables')]"
+          "dpsResourceName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iot')).outputs.DPSName.value]"
           },
-          "dpsEnrollment": {
-            "value": {
-              "resourceName": "[reference(resourceId('Microsoft.Resources/deployments', 'iot')).outputs.DPSName.value]",
-              "enrollmentName": "[variables('enrollmentGroupId')]",
-              "primaryKey": "[parameters('primaryKey')]",
-              "secondaryKey": "[parameters('secondaryKey')]"
-            }
+          "functionUrl": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'func')).outputs.FunctionUrl.value]"
+          },
+          "iotcApiKey": {
+            "value": "[parameters('iotcApiKey')]"
+          },
+          "iotcAppUrl": {
+            "value": "[parameters('iotcAppUrl')]"
           },
           "sqlDatabase": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sql.value.Database]"
@@ -919,10 +920,16 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "16422694142419697153"
+              "templateHash": "10229167233748155139"
             }
           },
           "parameters": {
+            "iotcApiKey": {
+              "type": "string"
+            },
+            "iotcAppUrl": {
+              "type": "string"
+            },
             "identity": {
               "type": "object"
             },
@@ -935,11 +942,13 @@
             "functionName": {
               "type": "string"
             },
-            "tables": {
-              "type": "array",
-              "defaultValue": []
+            "functionUrl": {
+              "type": "string"
             },
             "eventHubName": {
+              "type": "string"
+            },
+            "dpsResourceName": {
               "type": "string"
             },
             "projectName": {
@@ -951,10 +960,6 @@
             },
             "storageAccountName": {
               "type": "string"
-            },
-            "dpsEnrollment": {
-              "type": "object",
-              "metadata": {}
             }
           },
           "resources": [
@@ -979,7 +984,7 @@
                 "cleanupPreference": "OnExpiration",
                 "timeout": "PT30M",
                 "retentionInterval": "P1D",
-                "primaryScriptUri": "https://raw.githubusercontent.com/lucadruda/iotc-solution-migrator/main/deployments/scripts/config.ps1",
+                "primaryScriptUri": "https://raw.githubusercontent.com/lucadruda/iotc-solution-migrator/main/deployments/scripts/config.sh",
                 "environmentVariables": [
                   {
                     "name": "SUBSCRIPTION_ID",
@@ -990,6 +995,14 @@
                     "value": "[parameters('functionName')]"
                   },
                   {
+                    "name": "FUNCTIONAPP_URL",
+                    "value": "[parameters('functionUrl')]"
+                  },
+                  {
+                    "name": "RESOURCE_GROUP",
+                    "value": "[resourceGroup().name]"
+                  },
+                  {
                     "name": "REPO_URL",
                     "value": "https://github.com/lucadruda/iotc-solution-migrator"
                   },
@@ -998,24 +1011,16 @@
                     "value": "main"
                   },
                   {
-                    "name": "TABLES",
-                    "value": "[string(parameters('tables'))]"
+                    "name": "IOTC_API_KEY",
+                    "value": "[parameters('iotcApiKey')]"
                   },
                   {
-                    "name": "DPS_ENROLLMENT_NAME",
-                    "value": "[parameters('dpsEnrollment').enrollmentName]"
+                    "name": "IOTC_APP_URL",
+                    "value": "[parameters('iotcAppUrl')]"
                   },
                   {
                     "name": "DPS_RESOURCE_NAME",
-                    "value": "[parameters('dpsEnrollment').resourceName]"
-                  },
-                  {
-                    "name": "DPS_ENROLLMENT_PRIMARY_KEY",
-                    "value": "[parameters('dpsEnrollment').primaryKey]"
-                  },
-                  {
-                    "name": "DPS_ENROLLMENT_SECONDARY_KEY",
-                    "value": "[parameters('dpsEnrollment').secondaryKey]"
+                    "value": "[parameters('dpsResourceName')]"
                   },
                   {
                     "name": "IDENTITY_NAME",

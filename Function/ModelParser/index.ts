@@ -21,38 +21,41 @@ const HttpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         }
     }
     if (req.body) {
-        try {
-            const model = req.body.capabilityModel;
-            const config = parse(context, model);
-            const tableName = modelToBindingName(model['@id']);
-            const scriptCreate = scriptCreateTable(config, tableName);
-            const scriptSPTelemetry = scriptCreateSelectProc(config.telemetry, tableName);
-            const scriptSPProperties = scriptCreateSelectProc(config.properties, `${tableName}_props`);
+        let body = '';
+        for (const modelDefinition of req.body) {
+            try {
+                const model = modelDefinition.capabilityModel;
+                const config = parse(context, model);
+                const tableName = modelToBindingName(model['@id']);
+                const scriptCreate = scriptCreateTable(config, tableName);
+                const scriptSPTelemetry = scriptCreateSelectProc(config.telemetry, tableName);
+                const scriptSPProperties = scriptCreateSelectProc(config.properties, `${tableName}_props`);
 
-            let body = await queryDatabase(context, sqlConnection, scriptCreate);
-            body += `\n${await queryDatabase(context, sqlConnection, scriptSPTelemetry)}`;
-            body += `\n${await queryDatabase(context, sqlConnection, scriptSPProperties)}`;
+                body += await queryDatabase(context, sqlConnection, scriptCreate);
+                body += `\n${await queryDatabase(context, sqlConnection, scriptSPTelemetry)}`;
+                body += `\n${await queryDatabase(context, sqlConnection, scriptSPProperties)}`;
 
-            await writeTable(context, `${tableName}.json`, JSON.stringify(config.telemetry.map(c => c.name)));
-            await writeTable(context, `${tableName}_props.json`, JSON.stringify(config.properties.map(c => c.name)));
-            context.res = {
-                status: 201,
-                body
-            };
-        }
-        catch (err) {
-            if (err.message.startsWith('There is already an object')) {
+                await writeTable(context, `${tableName}.json`, JSON.stringify(config.telemetry.map(c => c.name)));
+                await writeTable(context, `${tableName}_props.json`, JSON.stringify(config.properties.map(c => c.name)));
                 context.res = {
-                    status: 409,
-                    body: err.message
-                }
-            } else {
-                context.res = {
-                    status: 500,
-                    body: err.message
-                }
+                    status: 201,
+                    body
+                };
             }
-            return;
+            catch (err) {
+                if (err.message.startsWith('There is already an object')) {
+                    context.res = {
+                        status: 409,
+                        body: err.message
+                    }
+                } else {
+                    context.res = {
+                        status: 500,
+                        body: err.message
+                    }
+                }
+                return;
+            }
         }
     }
     else {
