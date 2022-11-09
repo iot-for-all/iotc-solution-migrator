@@ -18,7 +18,7 @@ param storageAccountKey string
 param storageAccountName string
 
 resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  kind: 'AzurePowerShell'
+  kind: 'AzureCLI'
   location: resourceGroup().location
   name: '${projectName}-configscript'
   identity: {
@@ -32,7 +32,7 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       storageAccountKey: storageAccountKey
       storageAccountName: storageAccountName
     }
-    azPowerShellVersion: '8.3'
+    azCliVersion: '2.9.0'
     cleanupPreference: 'OnExpiration'
     timeout: 'PT30M'
     retentionInterval: 'P1D'

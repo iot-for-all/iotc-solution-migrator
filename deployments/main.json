@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "3148673373464548503"
+      "templateHash": "174804029854446401"
     }
   },
   "parameters": {
@@ -19,7 +19,7 @@
       }
     },
     "iotcAppUrl": {
-      "type": "secureString",
+      "type": "string",
       "metadata": {
         "description": "The Azure IoT Central app URL"
       }
@@ -28,13 +28,6 @@
       "type": "secureString",
       "metadata": {
         "description": "The Azure IoT Central API Key"
-      }
-    },
-    "tables": {
-      "type": "array",
-      "defaultValue": [],
-      "metadata": {
-        "description": "List of table names"
       }
     }
   },
@@ -920,7 +913,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "10229167233748155139"
+              "templateHash": "8665067978127138811"
             }
           },
           "parameters": {
@@ -967,7 +960,7 @@
               "type": "Microsoft.Resources/deploymentScripts",
               "apiVersion": "2020-10-01",
               "name": "[format('{0}-configscript', parameters('projectName'))]",
-              "kind": "AzurePowerShell",
+              "kind": "AzureCLI",
               "location": "[resourceGroup().location]",
               "identity": {
                 "type": "UserAssigned",
@@ -980,7 +973,7 @@
                   "storageAccountKey": "[parameters('storageAccountKey')]",
                   "storageAccountName": "[parameters('storageAccountName')]"
                 },
-                "azPowerShellVersion": "8.3",
+                "azCliVersion": "2.9.0",
                 "cleanupPreference": "OnExpiration",
                 "timeout": "PT30M",
                 "retentionInterval": "P1D",
