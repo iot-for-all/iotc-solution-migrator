@@ -39,17 +39,13 @@ ln -s /output/func /usr/local/bin/func
 TEMPLATES_RESP=$(curl -X GET -H "Authorization: $IOTC_API_KEY" ${IOTC_APP_URL}/api/deviceTemplates?api-version=2022-07-31)
 
 if [ $(echo $TEMPLATES_RESP | jq 'has("value")') == "true" ]; then
-    TEMPLATE_IDS=$(echo $TEMPLATES_RESP | jq '.value | map(.capabilityModel["@id"])')
+   export TEMPLATES=$(echo $TEMPLATES_RESP | jq '.value | map(.capabilityModel["@id"])')
 fi
 
 DPS_RESP=$(curl -X GET -H "Authorization: $IOTC_API_KEY" ${IOTC_APP_URL}/api/enrollmentGroups?api-version=2022-07-31)
 
 declare -A SYMMETRIC_KEYS="($(echo $DPS_RESP | jq -r '.value[] | select(.type=="iot" and .attestation.type=="symmetricKey") | .attestation.symmetricKey | to_entries | map("[\(.key)]=\(.value)")| join(" ")'))"
 
-
-if [ $(echo $DPS_RESP | jq 'has("value")') == "true" ]; then
-    export TEMPLATES=$(echo $TEMPLATES_RESP | jq '.value | map(."@id")')
-fi
 
 # Setup DPS
 az config set extension.use_dynamic_install=yes_without_prompt
@@ -70,38 +66,38 @@ npm run generate-config
 func azure functionapp publish "$FUNCTIONAPP_NAME" --subscription "$SUBSCRIPTION_ID" --typescript
 
 # Call the function to parse models
-curl -X POST -H "Content-Type: application/json" -d "$(echo $TEMPLATES_RESP | jq '.value|tostring')" $FUNCTIONAPP_URL
+curl -X POST -H "Content-Type: application/json" -d "$(echo $TEMPLATES_RESP | jq -r '.value|tostring')" $FUNCTIONAPP_URL
 
 # Configure grafana
-GRAFANA_TOKEN=$(az account get-access-token --resource "ce34e7e5-485f-4d76-964f-b3d2b16d1e4f" | jq '.accessToken')
+GRAFANA_TOKEN=$(az account get-access-token --resource "ce34e7e5-485f-4d76-964f-b3d2b16d1e4f" | jq -r '.accessToken')
 
 # Generate a grafana password ( 12 chars with capitals, numbers and symbols)
 GRAFANA_PASSWORD=$(pwgen -c -n 12 1)
 
 # Create Datasource
 curl -X POST -H "Authorization: Bearer ${GRAFANA_TOKEN}" -H "Content-Type: application/json" -d "{
-        'name': 'IoTCSql',
-        'type': 'mssql',
-        'typeName': 'Microsoft SQL Server',
-        'typeLogoUrl': 'public/app/plugins/datasource/mssql/img/sql_server_logo.svg',
-        'access': 'proxy',
-        'url': '$SQL_ENDPOINT',
-        'user': 'grafana',
-        'database': '$SQL_DATABASE',
-        'basicAuth': false,
-        'isDefault': false,
-        'jsonData': {
-            'authenticationType': 'SQL Server Authentication',
-            'encrypt': 'false',
-            'serverName': '',
-            'sslRootCertFile': '',
-            'tlsSkipVerify': false
+        \"name\": \"IoTCSql\",
+        \"type\": \"mssql\",
+        \"typeName\": \"Microsoft SQL Server\",
+        \"typeLogoUrl\": \"public/app/plugins/datasource/mssql/img/sql_server_logo.svg\",
+        \"access\": \"proxy\",
+        \"url\": \"$SQL_ENDPOINT\",
+        \"user\": \"grafana\",
+        \"database\": \"$SQL_DATABASE\",
+        \"basicAuth\": false,
+        \"isDefault\": false,
+        \"jsonData\": {
+            \"authenticationType\": \"SQL Server Authentication\",
+            \"encrypt\": \"false\",
+            \"serverName\": \"\",
+            \"sslRootCertFile\": \"\",
+            \"tlsSkipVerify\": false
         },
-        'secureJsonData':{
-            'password':'$GRAFANA_PASSWORD'
+        \"secureJsonData\":{
+            \"password\":\"$GRAFANA_PASSWORD\"
         },
-        'readOnly': false
-}" ${GRAFANA_ENDPOINT}/api/datasource
+        \"readOnly\": false
+}" ${GRAFANA_ENDPOINT}/api/datasources
 
 
 SQL_CMD_BIN=/opt/mssql-tools18/bin/sqlcmd

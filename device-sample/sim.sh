@@ -1,6 +1,6 @@
 #!/bin/bash
-python device.py dev01 &
-python device.py dev02 &
+python device.py dev01 $1 &
+python device.py dev02 $1 &
 
 echo "Press 'q' to exit"
 while true; do

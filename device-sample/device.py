@@ -8,7 +8,7 @@ from random import randint, random
 async def main():
     client = IoTCClient(
         argv[1],
-        "0ne008104A2",
+        argv[2],
         IOTCConnectType.IOTC_CONNECT_SYMM_KEY,
         "r0mxLzPr9gg5DfsaxVhOwKK2+8jEHNclmCeb9iACAyb2A7yHPDrB2/+PTmwnTAetvI6oQkwarWHxYbkIVLybEg==",
     )

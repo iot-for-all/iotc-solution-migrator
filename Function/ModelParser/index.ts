@@ -32,11 +32,14 @@ const HttpTrigger: AzureFunction = async function (context: Context, req: HttpRe
                 const scriptSPProperties = scriptCreateSelectProc(config.properties, `${tableName}_props`);
 
                 body += await queryDatabase(context, sqlConnection, scriptCreate);
-                body += `\n${await queryDatabase(context, sqlConnection, scriptSPTelemetry)}`;
-                body += `\n${await queryDatabase(context, sqlConnection, scriptSPProperties)}`;
+                body += await queryDatabase(context, sqlConnection, scriptSPTelemetry);
+                body += await queryDatabase(context, sqlConnection, scriptSPProperties);
 
                 await writeTable(context, `${tableName}.json`, JSON.stringify(config.telemetry.map(c => c.name)));
+                body += `Created table ${tableName} for model ${model['@id']}\n`
                 await writeTable(context, `${tableName}_props.json`, JSON.stringify(config.properties.map(c => c.name)));
+                body += `Created table ${tableName}_props for model ${model['@id']}\n`
+
                 context.res = {
                     status: 201,
                     body
@@ -51,7 +54,7 @@ const HttpTrigger: AzureFunction = async function (context: Context, req: HttpRe
                 } else {
                     context.res = {
                         status: 500,
-                        body: err.message
+                        body: `${err.message}\n${err.stack}`
                     }
                 }
                 return;

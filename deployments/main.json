@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "16884900790412045323"
+      "templateHash": "5439184821049613480"
     }
   },
   "parameters": {
@@ -928,7 +928,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "4258134788142786749"
+              "templateHash": "14264254849928204665"
             }
           },
           "parameters": {
@@ -997,9 +997,9 @@
                   "storageAccountKey": "[parameters('storageAccountKey')]",
                   "storageAccountName": "[parameters('storageAccountName')]"
                 },
-                "azCliVersion": "2.9.0",
+                "azCliVersion": "2.42.0",
                 "cleanupPreference": "OnExpiration",
-                "timeout": "PT30M",
+                "timeout": "PT2H",
                 "retentionInterval": "P1D",
                 "primaryScriptUri": "https://raw.githubusercontent.com/lucadruda/iotc-solution-migrator/main/deployments/scripts/config.sh",
                 "environmentVariables": [

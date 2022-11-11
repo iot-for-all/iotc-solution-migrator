@@ -37,9 +37,9 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       storageAccountKey: storageAccountKey
       storageAccountName: storageAccountName
     }
-    azCliVersion: '2.9.0'
+    azCliVersion: '2.42.0'
     cleanupPreference: 'OnExpiration'
-    timeout: 'PT30M'
+    timeout: 'PT2H'
     retentionInterval: 'P1D'
     primaryScriptUri: 'https://raw.githubusercontent.com/lucadruda/iotc-solution-migrator/main/deployments/scripts/config.sh'
     environmentVariables: [
