@@ -5,6 +5,9 @@ param identity object
 
 param sqlEndpoint string
 param sqlDatabase string
+param sqlUserName string
+@secure()
+param sqlPassword string
 param functionName string
 param functionUrl string
 param eventHubName string
@@ -75,6 +78,10 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
         value: dpsResourceName
       }
       {
+        name: 'DPS_ENROLLMENT_NAME'
+        value: uniqueString(projectName, 'saskeys', resourceGroup().name)
+      }
+      {
         name: 'IDENTITY_NAME'
         value: identity.name
       }
@@ -85,6 +92,14 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       {
         name: 'SQL_DATABASE'
         value: sqlDatabase
+      }
+      {
+        name: 'SQL_USERNAME'
+        value: sqlUserName
+      }
+      {
+        name: 'SQL_PASSWORD'
+        value: sqlPassword
       }
       {
         name: 'EVENTHUB_NAME'

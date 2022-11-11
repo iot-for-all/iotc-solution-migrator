@@ -4,7 +4,6 @@
 param projectName string = 'contoso'
 
 @description('The Azure IoT Central app URL')
-@secure()
 param iotcAppUrl string
 
 @description('The Azure IoT Central API Key')
@@ -12,9 +11,6 @@ param iotcAppUrl string
 param iotcApiKey string
 
 var location = resourceGroup().location
-
-@description('List of table names')
-param tables array = []
 
 var enrollmentGroupId = take('${projectName}dps${uniqueString(resourceGroup().id)}eg', 20)
 
@@ -118,6 +114,8 @@ module SetupScript 'script.bicep' = {
     iotcAppUrl: iotcAppUrl
     sqlDatabase: SqlServer.outputs.sql.Database
     sqlEndpoint: SqlServer.outputs.sql.Endpoint
+    sqlUserName: SqlServer.outputs.sql.Username
+    sqlPassword: SqlServer.outputs.sql.Password
     eventHubName: IoT.outputs.EventHubName
   }
   dependsOn: [

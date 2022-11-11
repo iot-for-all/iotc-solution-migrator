@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "174804029854446401"
+      "templateHash": "2753141144080297458"
     }
   },
   "parameters": {
@@ -902,6 +902,12 @@
           "sqlEndpoint": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sql.value.Endpoint]"
           },
+          "sqlUserName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sql.value.Username]"
+          },
+          "sqlPassword": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sql.value.Password]"
+          },
           "eventHubName": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iot')).outputs.EventHubName.value]"
           }
@@ -913,7 +919,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "8665067978127138811"
+              "templateHash": "2730072471948821939"
             }
           },
           "parameters": {
@@ -931,6 +937,12 @@
             },
             "sqlDatabase": {
               "type": "string"
+            },
+            "sqlUserName": {
+              "type": "string"
+            },
+            "sqlPassword": {
+              "type": "secureString"
             },
             "functionName": {
               "type": "string"
@@ -1016,6 +1028,10 @@
                     "value": "[parameters('dpsResourceName')]"
                   },
                   {
+                    "name": "DPS_ENROLLMENT_NAME",
+                    "value": "[uniqueString(parameters('projectName'), 'saskeys', resourceGroup().name)]"
+                  },
+                  {
                     "name": "IDENTITY_NAME",
                     "value": "[parameters('identity').name]"
                   },
@@ -1026,6 +1042,14 @@
                   {
                     "name": "SQL_DATABASE",
                     "value": "[parameters('sqlDatabase')]"
+                  },
+                  {
+                    "name": "SQL_USERNAME",
+                    "value": "[parameters('sqlUserName')]"
+                  },
+                  {
+                    "name": "SQL_PASSWORD",
+                    "value": "[parameters('sqlPassword')]"
                   },
                   {
                     "name": "EVENTHUB_NAME",
