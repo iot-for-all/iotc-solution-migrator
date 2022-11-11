@@ -117,6 +117,7 @@ module SetupScript 'script.bicep' = {
     sqlUserName: SqlServer.outputs.sql.Username
     sqlPassword: SqlServer.outputs.sql.Password
     eventHubName: IoT.outputs.EventHubName
+    grafanaEndpoint: Grafana.outputs.endpoint
   }
   dependsOn: [
     StorageAccount

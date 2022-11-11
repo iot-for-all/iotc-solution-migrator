@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "2753141144080297458"
+      "templateHash": "16884900790412045323"
     }
   },
   "parameters": {
@@ -805,7 +805,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "11014425139106356445"
+              "templateHash": "3749590775215061960"
             }
           },
           "parameters": {
@@ -848,7 +848,13 @@
                 "zoneRedundancy": "Disabled"
               }
             }
-          ]
+          ],
+          "outputs": {
+            "endpoint": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Dashboard/grafana', variables('name'))).endpoint]"
+            }
+          }
         }
       },
       "dependsOn": [
@@ -910,6 +916,9 @@
           },
           "eventHubName": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'iot')).outputs.EventHubName.value]"
+          },
+          "grafanaEndpoint": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'grafana')).outputs.endpoint.value]"
           }
         },
         "template": {
@@ -919,7 +928,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "2730072471948821939"
+              "templateHash": "4258134788142786749"
             }
           },
           "parameters": {
@@ -951,6 +960,9 @@
               "type": "string"
             },
             "eventHubName": {
+              "type": "string"
+            },
+            "grafanaEndpoint": {
               "type": "string"
             },
             "dpsResourceName": {
@@ -1054,6 +1066,10 @@
                   {
                     "name": "EVENTHUB_NAME",
                     "value": "[parameters('eventHubName')]"
+                  },
+                  {
+                    "name": "GRAFANA_ENDPOINT",
+                    "value": "[parameters('grafanaEndpoint')]"
                   }
                 ]
               }
@@ -1063,6 +1079,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'func')]",
+        "[resourceId('Microsoft.Resources/deployments', 'grafana')]",
         "[resourceId('Microsoft.Resources/deployments', 'iot')]",
         "[resourceId('Microsoft.Resources/deployments', 'sql')]",
         "[resourceId('Microsoft.Resources/deployments', 'storage')]",

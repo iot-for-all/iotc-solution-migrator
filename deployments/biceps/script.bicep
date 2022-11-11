@@ -12,6 +12,8 @@ param functionName string
 param functionUrl string
 param eventHubName string
 
+param grafanaEndpoint string
+
 param dpsResourceName string
 
 param projectName string = 'contoso'
@@ -104,6 +106,10 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       {
         name: 'EVENTHUB_NAME'
         value: eventHubName
+      }
+      {
+        name: 'GRAFANA_ENDPOINT'
+        value: grafanaEndpoint
       }
     ]
   }
