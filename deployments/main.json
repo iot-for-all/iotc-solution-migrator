@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "5439184821049613480"
+      "templateHash": "9605552453014329711"
     }
   },
   "parameters": {
@@ -928,7 +928,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "14264254849928204665"
+              "templateHash": "4844057502073746010"
             }
           },
           "parameters": {
@@ -997,7 +997,7 @@
                   "storageAccountKey": "[parameters('storageAccountKey')]",
                   "storageAccountName": "[parameters('storageAccountName')]"
                 },
-                "azCliVersion": "2.42.0",
+                "azCliVersion": "2.41.0",
                 "cleanupPreference": "OnExpiration",
                 "timeout": "PT2H",
                 "retentionInterval": "P1D",

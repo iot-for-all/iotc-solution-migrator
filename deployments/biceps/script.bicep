@@ -37,7 +37,7 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       storageAccountKey: storageAccountKey
       storageAccountName: storageAccountName
     }
-    azCliVersion: '2.42.0'
+    azCliVersion: '2.41.0'
     cleanupPreference: 'OnExpiration'
     timeout: 'PT2H'
     retentionInterval: 'P1D'
