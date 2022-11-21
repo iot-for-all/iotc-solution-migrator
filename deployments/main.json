@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "4518328198003242715"
+      "templateHash": "16238173748984454278"
     }
   },
   "parameters": {
@@ -928,7 +928,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "2198100672987850499"
+              "templateHash": "10165070802257500553"
             }
           },
           "parameters": {
@@ -1021,7 +1021,7 @@
                   },
                   {
                     "name": "REPO_URL",
-                    "value": "https://github.com/lucadruda/iotc-solution-migrator"
+                    "value": "https://github.com/iot-for-all/iotc-solution-migrator"
                   },
                   {
                     "name": "REPO_BRANCH",

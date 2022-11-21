@@ -61,7 +61,7 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       }
       {
         name: 'REPO_URL'
-        value: 'https://github.com/lucadruda/iotc-solution-migrator'
+        value: 'https://github.com/iot-for-all/iotc-solution-migrator'
       }
       {
         name: 'REPO_BRANCH'

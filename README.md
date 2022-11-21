@@ -8,16 +8,35 @@ Migration from IoTC to IoT Hub with solution
 
 ## 1. Fetch details.
 In order to automate the migration process, the tool utilizes IoT Central API tokens to interact with an application.
-Please create an API token or reuse an existing one with "App Administrator" role. 
+Please create an API token or reuse an existing one with "App Administrator" role.
 
-Follow official instructions on how to create an API token in IoT Central [here](https://learn.microsoft.com/en-us/rest/api/iotcentral/authentication#api-token). 
+Follow official instructions on how to create an API token in IoT Central [here](https://learn.microsoft.com/en-us/rest/api/iotcentral/authentication#api-token).
+
+Also note down the application subdomain, you can find it under the "Application" page in the IoT Central application.
+
+<img src='./media/subdomain.png' width='500rem'>
+
 ## 2. Create resources
 This repository contains an automated script which creates and configures all required Azure resources in one click.
-Hit the "Deploy to Azure" button below to start provision the system and follow instructions to access dashboards.
+Hit the "Deploy to Azure" button below to start provision the tool.
+Give project a name to be used as a prefix for all resource names and both application subdomain and API token as detailed in previous step.
+Once deployment ends, go to the "Outputs" section and copy the new _scopeId_ to be used later in the setup.
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fiot-for-all%2Fiotc-solution-migrator%2Fmain%2Fdeployments%2Fmain.json)
 
+<img src='./media/deployment_inputs.png' width='500rem'/>
+<img src='./media/deployment.png' width='500rem'/>
+<img src='./media/deployment_outputs.png' width='500rem'/>
 
+## 3. Access dashboards.
+User designed to be the dashboards administrator must be granted with the "Grafana Admin" role. Open the resource group in Azure portal and add the role by searching for "_Grafana admin_" and assign it to the user.
+> Roles may take up to an hour to propagate.
+Read [Dashboard](./docs/dashboards.md) instructions to access Grafana portal and manage users and organizations.
+
+<img src='./media/add_role.png' width='500rem'/>
+<img src='./media/search_role.png' width='500rem'/>
+
+## 4. Start device migration
 ## Prepare IoT Central Application and devices.
 This migration tool assumes the device templates in the application include the "Device Migration" component. You can download the DTDL component schema from [here](../raw/migration_component.json).
 
