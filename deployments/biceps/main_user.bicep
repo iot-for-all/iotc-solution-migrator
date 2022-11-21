@@ -3,8 +3,8 @@
 @maxLength(11)
 param projectName string = 'contoso'
 
-@description('The Azure IoT Central app URL')
-param iotcAppUrl string
+@description('The Azure IoT Central app subdomain')
+param iotcAppSubdomain string
 
 @description('The Azure IoT Central API Key')
 @secure()
@@ -111,7 +111,7 @@ module SetupScript 'script.bicep' = {
     dpsResourceName: IoT.outputs.DPSName
     functionUrl: Function.outputs.FunctionUrl
     iotcApiKey: iotcApiKey
-    iotcAppUrl: iotcAppUrl
+    iotcAppUrl: 'https://${iotcAppSubdomain}.azureiotcentral.com'
     sqlDatabase: SqlServer.outputs.sql.Database
     sqlEndpoint: SqlServer.outputs.sql.Endpoint
     sqlUserName: SqlServer.outputs.sql.Username

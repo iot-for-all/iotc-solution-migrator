@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "8822711540767433757"
+      "templateHash": "4518328198003242715"
     }
   },
   "parameters": {
@@ -18,10 +18,10 @@
         "description": "Define the project name or prefix for all objects."
       }
     },
-    "iotcAppUrl": {
+    "iotcAppSubdomain": {
       "type": "string",
       "metadata": {
-        "description": "The Azure IoT Central app URL"
+        "description": "The Azure IoT Central app subdomain"
       }
     },
     "iotcApiKey": {
@@ -900,7 +900,7 @@
             "value": "[parameters('iotcApiKey')]"
           },
           "iotcAppUrl": {
-            "value": "[parameters('iotcAppUrl')]"
+            "value": "[format('https://{0}.azureiotcentral.com', parameters('iotcAppSubdomain'))]"
           },
           "sqlDatabase": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'sql')).outputs.sql.value.Database]"
