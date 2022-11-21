@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "10365760288758727178"
+      "templateHash": "8822711540767433757"
     }
   },
   "parameters": {
@@ -928,7 +928,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "4844057502073746010"
+              "templateHash": "2198100672987850499"
             }
           },
           "parameters": {
@@ -1001,7 +1001,7 @@
                 "cleanupPreference": "OnExpiration",
                 "timeout": "PT2H",
                 "retentionInterval": "P1D",
-                "primaryScriptUri": "https://raw.githubusercontent.com/lucadruda/iotc-solution-migrator/main/deployments/scripts/config.sh",
+                "primaryScriptUri": "https://raw.githubusercontent.com/iot-for-all/iotc-solution-migrator/main/deployments/scripts/config.sh",
                 "environmentVariables": [
                   {
                     "name": "SUBSCRIPTION_ID",

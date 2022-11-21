@@ -1,0 +1,144 @@
+{
+    "@id": "dtmi:azureiotcentral:MigratableDevices;1",
+    "@type": "Interface",
+    "contents": [
+        {
+            "@type": [
+                "Telemetry",
+                "Temperature"
+            ],
+            "name": "temperature",
+            "displayName": "Temperature",
+            "schema": "double"
+        },
+        {
+            "@type": [
+                "Telemetry",
+                "Humidity"
+            ],
+            "name": "humidity",
+            "displayName": "Humidity",
+            "schema": "double"
+        },
+        {
+            "@type": "Component",
+            "name": "device_info",
+            "displayName": "Device Information",
+            "schema": {
+                "@id": "dtmi:azureiotcentral:DeviceInfo;1",
+                "@type": "Interface",
+                "contents": [
+                    {
+                        "@type": "Telemetry",
+                        "name": "battery",
+                        "displayName": "Battery Level",
+                        "schema": "integer"
+                    },
+                    {
+                        "@type": "Property",
+                        "name": "sn",
+                        "displayName": "Serial Number",
+                        "schema": "string"
+                    },
+                    {
+                        "@type": "Property",
+                        "name": "fw_ver",
+                        "displayName": "Firmware version",
+                        "schema": "string"
+                    }
+                ],
+                "@context": [
+                    "dtmi:iotcentral:context;2",
+                    "dtmi:dtdl:context;2"
+                ]
+            }
+        },
+        {
+            "@type": "Component",
+            "name": "migration",
+            "displayName": "Migration",
+            "schema": {
+                "@id": "dtmi:azureiot:DeviceMigration;1",
+                "@type": "Interface",
+                "contents": [
+                    {
+                        "@type": "Command",
+                        "commandType": "synchronous",
+                        "displayName": {
+                            "en": "DeviceMove"
+                        },
+                        "name": "DeviceMove",
+                        "request": {
+                            "@type": "CommandPayload",
+                            "displayName": {
+                                "en": "Data"
+                            },
+                            "name": "data",
+                            "schema": {
+                                "@type": "Object",
+                                "displayName": {
+                                    "en": "Object"
+                                },
+                                "fields": [
+                                    {
+                                        "displayName": {
+                                            "en": "Id Scope"
+                                        },
+                                        "name": "idScope",
+                                        "schema": "string"
+                                    },
+                                    {
+                                        "displayName": {
+                                            "en": "DPS name"
+                                        },
+                                        "name": "dpsName",
+                                        "schema": "string"
+                                    },
+                                    {
+                                        "displayName": {
+                                            "en": "DPS Id"
+                                        },
+                                        "name": "dpsId",
+                                        "schema": "string"
+                                    },
+                                    {
+                                        "displayName": {
+                                            "en": "IoT Central Destination Name"
+                                        },
+                                        "name": "centralAppName",
+                                        "schema": "string"
+                                    },
+                                    {
+                                        "displayName": {
+                                            "en": "IoT Central Destination Subdomain"
+                                        },
+                                        "name": "centralAppSubdomain",
+                                        "schema": "string"
+                                    },
+                                    {
+                                        "displayName": {
+                                            "en": "IoT Central Destination Template"
+                                        },
+                                        "name": "deviceTemplateId",
+                                        "schema": "string"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "displayName": {
+                    "en": "Device Migration"
+                },
+                "@context": [
+                    "dtmi:iotcentral:context;2",
+                    "dtmi:dtdl:context;2"
+                ]
+            }
+        }
+    ],
+    "@context": [
+        "dtmi:iotcentral:context;2",
+        "dtmi:dtdl:context;2"
+    ]
+}

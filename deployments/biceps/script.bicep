@@ -41,7 +41,7 @@ resource SetupScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     cleanupPreference: 'OnExpiration'
     timeout: 'PT2H'
     retentionInterval: 'P1D'
-    primaryScriptUri: 'https://raw.githubusercontent.com/lucadruda/iotc-solution-migrator/main/deployments/scripts/config.sh'
+    primaryScriptUri: 'https://raw.githubusercontent.com/iot-for-all/iotc-solution-migrator/main/deployments/scripts/config.sh'
     environmentVariables: [
       {
         name: 'SUBSCRIPTION_ID'
