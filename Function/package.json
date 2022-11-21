@@ -20,6 +20,7 @@
   "dependencies": {
     "@azure/identity": "^3.0.0",
     "@azure/storage-file-share": "^12.11.0",
+    "axios": "^1.2.0-alpha.1",
     "azure-iothub": "^1.15.0",
     "tedious": "^15.1.0"
   }

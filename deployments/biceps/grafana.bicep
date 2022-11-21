@@ -19,7 +19,7 @@ resource grafana 'Microsoft.Dashboard/grafana@2022-08-01' = {
     }
   }
   properties: {
-    apiKey: 'Disabled'
+    apiKey: 'Enabled'
     deterministicOutboundIP: 'Disabled'
     publicNetworkAccess: 'Enabled'
     zoneRedundancy: 'Disabled'

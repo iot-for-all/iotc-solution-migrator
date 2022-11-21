@@ -50,9 +50,18 @@ export type SQLColumn = {
     name: string,
     displayName: string,
     dataType: SQLDataType
+    isLocation?: boolean,
+    parentName?: string,
+    parentDisplayName?: string
+}
+
+export type SQLItem = {
+    name?: string,
+    displayName?: string,
+    telemetry: SQLColumn[],
+    properties: SQLColumn[]
 }
 
 export type SQLConfig = {
-    telemetry: SQLColumn[],
-    properties: SQLColumn[]
+    [componentName: string]: SQLItem
 }

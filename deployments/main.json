@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "9605552453014329711"
+      "templateHash": "10365760288758727178"
     }
   },
   "parameters": {
@@ -805,7 +805,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.11.1.770",
-              "templateHash": "3749590775215061960"
+              "templateHash": "6854012241302790205"
             }
           },
           "parameters": {
@@ -842,7 +842,7 @@
                 }
               },
               "properties": {
-                "apiKey": "Disabled",
+                "apiKey": "Enabled",
                 "deterministicOutboundIP": "Disabled",
                 "publicNetworkAccess": "Enabled",
                 "zoneRedundancy": "Disabled"

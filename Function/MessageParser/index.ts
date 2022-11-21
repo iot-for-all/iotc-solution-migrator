@@ -13,7 +13,7 @@ const IoTHubTrigger: AzureFunction = async function (context: Context, IoTHubMes
     IoTHubMessages.forEach(async (message, index) => {
         let { [COMPONENT_KEY]: messageComponent, [MODEL_KEY]: modelId, [DEVICE_ID_KEY]: deviceId, [TIMESTAMP_KEY]: timestamp, [MESSAGE_SOURCE_KEY]: messageSource } = context.bindingData.systemPropertiesArray[index];
         const { [OPERATION_TYPE]: opType } = context.bindingData.propertiesArray[index];
-        context.log(`MessageSource: ${messageSource}, OperationType: ${opType}`);
+        context.log(`MessageSource: ${messageSource}, OperationType: ${opType}, Message: ${message}, Component: ${messageComponent}`);
 
         message = JSON.parse(message);
 
@@ -29,8 +29,8 @@ const IoTHubTrigger: AzureFunction = async function (context: Context, IoTHubMes
                         if (componentName === messageComponent) {
                             // also covers the case where capability is an object
                             obj[capability] = capabilityName.reduce((msg, prop) => {
-                                return msg ? msg[prop] : undefined;
-                            }, message);
+                                return msg ? msg[prop] : null;
+                            }, message) ?? null;
                         }
                         else {
                             obj[capability] = null
@@ -39,8 +39,8 @@ const IoTHubTrigger: AzureFunction = async function (context: Context, IoTHubMes
                     else {
                         if (message[capability]) {
                             obj[capability] = capability.split('.').reduce((msg, prop) => {
-                                return msg ? msg[prop] : undefined;
-                            }, message);
+                                return msg ? msg[prop] : null;
+                            }, message) ?? null;
                         }
                         else {
                             obj[capability] = null
@@ -51,6 +51,7 @@ const IoTHubTrigger: AzureFunction = async function (context: Context, IoTHubMes
                     : message
                 )
             }
+            context.log(row);
             context.bindings[modelToBindingName(modelId)] = row;
             return;
         }

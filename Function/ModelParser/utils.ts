@@ -41,3 +41,8 @@ export function normalizeColumnName(columnName: string) {
     }
     return columnName;
 }
+
+export function getCapabilityName(fullName: string) {
+    const segments = fullName.split('.');
+    return segments[segments.length - 1];
+}
