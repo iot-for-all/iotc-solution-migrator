@@ -6,11 +6,16 @@ Migration from IoTC to IoT Hub with solution
 2. Azure IoT Central application and API Key
 3. Compatible IoT Central device templates (see [Prepare IoT Central Application and devices](#prepare-iot-central-application-and-devices).)
 
-## Create resources
+## 1. Fetch details.
+In order to automate the migration process, the tool utilizes IoT Central API tokens to interact with an application.
+Please create an API token or reuse an existing one with "App Administrator" role. 
+
+Follow official instructions on how to create an API token in IoT Central [here](https://learn.microsoft.com/en-us/rest/api/iotcentral/authentication#api-token). 
+## 2. Create resources
 This repository contains an automated script which creates and configures all required Azure resources in one click.
 Hit the "Deploy to Azure" button below to start provision the system and follow instructions to access dashboards.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Flucadruda%2Fiotc-solution-migrator%2Fmain%2Fdeployments%2Fmain.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fiot-for-all%2Fiotc-solution-migrator%2Fmain%2Fdeployments%2Fmain.json)
 
 
 ## Prepare IoT Central Application and devices.
