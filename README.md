@@ -8,6 +8,11 @@ A simple, managed solution
 2. Azure IoT Central application and API Key
 3. Compatible IoT Central device templates (see [Prepare IoT Central Application and devices](#prepare-iot-central-application-and-devices).)
 
+## Limitations
+- Currently the tool does not support migration of devices authenticating through x509 certificates but SAS keys only.
+- The whole tool is based on the concept of "device template". Unassigned devices are currently not supported.
+- Dashboard customizations in the IoT Central application are not automatically applied to grafana dashboards.
+
 ## 1. Fetch details.
 
 In order to automate the migration process, the tool utilizes IoT Central API tokens to interact with an application.
