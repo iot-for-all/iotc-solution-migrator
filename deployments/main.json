@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.11.1.770",
-      "templateHash": "16238173748984454278"
+      "templateHash": "17853617595500707660"
     }
   },
   "parameters": {
@@ -573,6 +573,93 @@
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
+      "name": "grafana",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "projectName": {
+            "value": "[parameters('projectName')]"
+          },
+          "location": {
+            "value": "[variables('location')]"
+          },
+          "identity": {
+            "value": {
+              "Id": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]",
+              "clientId": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.clientId.value]"
+            }
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.11.1.770",
+              "templateHash": "6854012241302790205"
+            }
+          },
+          "parameters": {
+            "projectName": {
+              "type": "string",
+              "metadata": {
+                "description": "The project name to be used for naming generation"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "identity": {
+              "type": "object"
+            }
+          },
+          "variables": {
+            "name": "[take(format('{0}dash{1}', parameters('projectName'), uniqueString(resourceGroup().id)), 20)]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Dashboard/grafana",
+              "apiVersion": "2022-08-01",
+              "name": "[variables('name')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard"
+              },
+              "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', parameters('identity').Id)]": {}
+                }
+              },
+              "properties": {
+                "apiKey": "Enabled",
+                "deterministicOutboundIP": "Disabled",
+                "publicNetworkAccess": "Enabled",
+                "zoneRedundancy": "Disabled"
+              }
+            }
+          ],
+          "outputs": {
+            "endpoint": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Dashboard/grafana', variables('name'))).endpoint]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'sql')]",
+        "[resourceId('Microsoft.Resources/deployments', 'identity')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
       "name": "func",
       "properties": {
         "expressionEvaluationOptions": {
@@ -769,96 +856,10 @@
         }
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'grafana')]",
         "[resourceId('Microsoft.Resources/deployments', 'iot')]",
         "[resourceId('Microsoft.Resources/deployments', 'sql')]",
         "[resourceId('Microsoft.Resources/deployments', 'storage')]",
-        "[resourceId('Microsoft.Resources/deployments', 'identity')]"
-      ]
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-10-01",
-      "name": "grafana",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "projectName": {
-            "value": "[parameters('projectName')]"
-          },
-          "location": {
-            "value": "[variables('location')]"
-          },
-          "identity": {
-            "value": {
-              "Id": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.id.value]",
-              "clientId": "[reference(resourceId('Microsoft.Resources/deployments', 'identity')).outputs.clientId.value]"
-            }
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.11.1.770",
-              "templateHash": "6854012241302790205"
-            }
-          },
-          "parameters": {
-            "projectName": {
-              "type": "string",
-              "metadata": {
-                "description": "The project name to be used for naming generation"
-              }
-            },
-            "location": {
-              "type": "string",
-              "defaultValue": "[resourceGroup().location]"
-            },
-            "identity": {
-              "type": "object"
-            }
-          },
-          "variables": {
-            "name": "[take(format('{0}dash{1}', parameters('projectName'), uniqueString(resourceGroup().id)), 20)]"
-          },
-          "resources": [
-            {
-              "type": "Microsoft.Dashboard/grafana",
-              "apiVersion": "2022-08-01",
-              "name": "[variables('name')]",
-              "location": "[parameters('location')]",
-              "sku": {
-                "name": "Standard"
-              },
-              "identity": {
-                "type": "UserAssigned",
-                "userAssignedIdentities": {
-                  "[format('{0}', parameters('identity').Id)]": {}
-                }
-              },
-              "properties": {
-                "apiKey": "Enabled",
-                "deterministicOutboundIP": "Disabled",
-                "publicNetworkAccess": "Enabled",
-                "zoneRedundancy": "Disabled"
-              }
-            }
-          ],
-          "outputs": {
-            "endpoint": {
-              "type": "string",
-              "value": "[reference(resourceId('Microsoft.Dashboard/grafana', variables('name'))).endpoint]"
-            }
-          }
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'sql')]",
         "[resourceId('Microsoft.Resources/deployments', 'identity')]"
       ]
     },

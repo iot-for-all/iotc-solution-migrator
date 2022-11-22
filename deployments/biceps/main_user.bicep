@@ -62,6 +62,21 @@ module SqlServer 'sql-server.bicep' = {
   ]
 }
 
+module Grafana 'grafana.bicep' = {
+  name: 'grafana'
+  params: {
+    projectName: projectName
+    location: location
+    identity: {
+      Id: UserIdentity.outputs.id
+      clientId: UserIdentity.outputs.clientId
+    }
+  }
+  dependsOn: [
+    UserIdentity
+    SqlServer
+  ]
+}
 module Function 'function_user.bicep' = {
   name: 'func'
   params: {
@@ -78,22 +93,7 @@ module Function 'function_user.bicep' = {
     IoT
     StorageAccount
     SqlServer
-  ]
-}
-
-module Grafana 'grafana.bicep' = {
-  name: 'grafana'
-  params: {
-    projectName: projectName
-    location: location
-    identity: {
-      Id: UserIdentity.outputs.id
-      clientId: UserIdentity.outputs.clientId
-    }
-  }
-  dependsOn: [
-    UserIdentity
-    SqlServer
+    Grafana
   ]
 }
 

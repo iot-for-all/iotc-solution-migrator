@@ -27,6 +27,9 @@ const HttpTrigger: AzureFunction = async function (context: Context, req: HttpRe
             try {
                 const model = modelDefinition.capabilityModel;
                 const config = parse(context, model);
+                const displayName = modelDefinition.displayName ?
+                    (modelDefinition.displayName || modelDefinition.displayName['en'])
+                    : (model.displayName || model.displayName['en']);
                 const tableName = modelToBindingName(model['@id']);
                 const scriptCreate = scriptCreateTable(config, tableName);
                 // const scriptSPTelemetry = scriptCreateSelectProc(config.telemetry, tableName);
@@ -41,7 +44,7 @@ const HttpTrigger: AzureFunction = async function (context: Context, req: HttpRe
                 await writeTable(context, `${tableName}_props.json`, JSON.stringify(Object.keys(config).flatMap(c => config[c].properties.map(c => c.name))));
                 body += `Created table ${tableName}_props for model ${model['@id']}\n`
 
-                const folderUid = await createFolder(model.displayName || model.displayName['en']);
+                const folderUid = await createFolder(displayName);
                 body += JSON.stringify(config);
                 for (const component in config) {
                     await createComponentDashboard({
