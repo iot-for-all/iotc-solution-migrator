@@ -103,3 +103,7 @@ __azurite_db*__.json
 
 # Python
 .pyenv
+
+# Environment
+.env
+*env

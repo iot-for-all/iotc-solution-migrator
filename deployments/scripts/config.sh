@@ -53,21 +53,6 @@ az login --identity
 az account set --subscription "$SUBSCRIPTION_ID"
 az iot dps enrollment-group create -g "$RESOURCE_GROUP" --dps-name "$DPS_RESOURCE_NAME" --enrollment-id "$DPS_ENROLLMENT_NAME" --primary-key "${SYMMETRIC_KEYS[primaryKey]}" --secondary-key "${SYMMETRIC_KEYS[secondaryKey]}" --subscription "$SUBSCRIPTION_ID"
 
-# Add Azure function code
-## Basically adding the right bindings to function.json
-
-git clone "$REPO_URL"
-cd iotc-solution-migrator/Function
-git checkout "$REPO_BRANCH"
-npm install
-npm run generate-config
-
-# Deploy azure function
-func azure functionapp publish "$FUNCTIONAPP_NAME" --subscription "$SUBSCRIPTION_ID" --typescript
-
-# Call the function to parse models
-curl -X POST -H "Content-Type: application/json" -d "$(echo $TEMPLATES_RESP | jq -r '.value|tostring')" $FUNCTIONAPP_URL
-
 # Configure grafana
 GRAFANA_TOKEN=$(az account get-access-token --resource "ce34e7e5-485f-4d76-964f-b3d2b16d1e4f" | jq -r '.accessToken')
 
@@ -75,7 +60,7 @@ GRAFANA_TOKEN=$(az account get-access-token --resource "ce34e7e5-485f-4d76-964f-
 GRAFANA_PASSWORD=$(pwgen -c -n 12 1)
 
 # Create Datasource
-curl -X POST -H "Authorization: Bearer ${GRAFANA_TOKEN}" -H "Content-Type: application/json" -d "{
+GRAFANA_DATASOURCE_RESP=$(curl -X POST -H "Authorization: Bearer ${GRAFANA_TOKEN}" -H "Content-Type: application/json" -d "{
         \"name\": \"IoTCSql\",
         \"type\": \"mssql\",
         \"typeName\": \"Microsoft SQL Server\",
@@ -97,8 +82,28 @@ curl -X POST -H "Authorization: Bearer ${GRAFANA_TOKEN}" -H "Content-Type: appli
             \"password\":\"$GRAFANA_PASSWORD\"
         },
         \"readOnly\": false
-}" ${GRAFANA_ENDPOINT}/api/datasources
+}" ${GRAFANA_ENDPOINT}/api/datasources)
 
+GRAFANA_DATASOURCE_UID=$(echo $GRAFANA_DATASOURCE_RESP | jq '.datasource.uid')
+
+
+# Add Azure function code
+## Basically adding the right bindings to function.json
+
+git clone "$REPO_URL"
+cd iotc-solution-migrator/Function
+git checkout "$REPO_BRANCH"
+npm install
+npm run generate-config
+
+# Deploy azure function
+func azure functionapp publish "$FUNCTIONAPP_NAME" --subscription "$SUBSCRIPTION_ID" --typescript
+
+# Update function settings
+az functionapp config appsettings set --name $FUNCTIONAPP_NAME --resource-group $RESOURCE_GROUP --subscription $SUBSCRIPTION_ID --settings "GRAFANA_ENDPOINT=$GRAFANA_ENDPOINT" "GRAFANA_TOKEN=$GRAFANA_TOKEN" "GRAFANA_DATASOURCE_UID=$GRAFANA_DATASOURCE_UID"
+
+# Call the function to parse models
+curl -X POST -H "Content-Type: application/json" -d "$(echo $TEMPLATES_RESP | jq -r '.value|tostring')" $FUNCTIONAPP_URL
 
 SQL_CMD_BIN=/opt/mssql-tools18/bin/sqlcmd
 
