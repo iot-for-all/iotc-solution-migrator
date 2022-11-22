@@ -1,12 +1,12 @@
 # Azure IoT Central to PaaS migration tool
 
-A simple, managed solution 
+A simple, managed solution to move your IoT Central devices to a platform service powered by Azure resources and Grafana Dashboards.
 
 ## Requirements
 
 1. Azure Subscription
 2. Azure IoT Central application and API Key
-3. Compatible IoT Central device templates (see [Prepare IoT Central Application and devices](#prepare-iot-central-application-and-devices).)
+3. Compatible IoT Central device templates (see [Prepare IoT Central Application and devices](#prepare-iot-central-application-and-devices)).
 
 ## Limitations
 - Currently the tool does not support migration of devices authenticating through x509 certificates but SAS keys only.
