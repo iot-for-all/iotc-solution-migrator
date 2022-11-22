@@ -3,10 +3,11 @@
 OUTPUT={}
 
 log(){
-OUTPUT=$(echo $OUTPUT | jq -r "if has(\"$1\") then (.$1 |= . +[\"$2\"]) else .|= . + {\"$1\":[\"$2\"]} end | tostring")
+OUTPUT=$(echo $OUTPUT | jq -r "if has(\"$1\") then (.[\"$1\"] |= . +[\"$2\"]) else .|= . + {\"$1\":[\"$2\"]} end | tostring")
 echo $OUTPUT > $AZ_SCRIPTS_OUTPUT_PATH
 }
 
+log "Deployment script" "Starting now"
 # https://github.com/microsoft/WSL/issues/5991
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
 
