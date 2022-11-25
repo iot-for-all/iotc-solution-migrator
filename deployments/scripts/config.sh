@@ -51,7 +51,7 @@ ln -s /output/func /usr/local/bin/func
 
 log "IoT Central" "Fetching templates."
 # Get IoT Central Info
-TEMPLATES_RESP=$(curl -X GET -H "Authorization: $IOTC_API_KEY" ${IOTC_APP_URL}/api/deviceTemplates?api-version=2022-07-31)
+TEMPLATES_RESP=$(curl -s -X GET -H "Authorization: $IOTC_API_KEY" ${IOTC_APP_URL}/api/deviceTemplates?api-version=2022-07-31)
 
 if [ $(echo $TEMPLATES_RESP | jq 'has("value")') == "true" ]; then
    export TEMPLATES=$(echo $TEMPLATES_RESP | jq '.value | map(.capabilityModel["@id"])')
@@ -137,8 +137,8 @@ func azure functionapp publish "$FUNCTIONAPP_NAME" --subscription "$SUBSCRIPTION
 
 # Call the function to parse models
 log "Configuration" "Calling function."
-CONFIG_RESP=$(curl -X POST -H "Content-Type: application/json" -d "$(echo $TEMPLATES_RESP | jq -r '.value|tostring')" $FUNCTIONAPP_URL)
-log "Configuration" "Response: $(echo $CONFIG_RESP | sed 's/"/\"/')"
+CONFIG_RESP=$(curl -s -X POST -H "Content-Type: application/json" -d "$(echo $TEMPLATES_RESP | jq -r '.value|tostring')" $FUNCTIONAPP_URL)
+log "Configuration" "Response: $(echo $CONFIG_RESP | sed 's/"/\\"/g')"
 
 
 SQL_CMD_BIN=/opt/mssql-tools18/bin/sqlcmd
