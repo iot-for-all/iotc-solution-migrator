@@ -144,11 +144,8 @@ async def main(device_id: str, scope_id: str, group_key: str):
             on_prop=on_prop,
         )
     )
-    keyboard_loop = asyncio.get_running_loop().run_in_executor(
-        None, keyboard_monitor, [main_loop]
-    )
     try:
-        await asyncio.gather(main_loop, keyboard_loop)
+        await asyncio.gather(main_loop)
     except asyncio.CancelledError:
         pass  # ignore the cancel actions on twin_listener and direct_method_listener
     print("Exiting...")
