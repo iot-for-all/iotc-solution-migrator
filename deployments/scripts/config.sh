@@ -16,7 +16,6 @@ cd /tmp/setup
 
 apk update
 
-
 apk add pwgen gnupg
 
 # Install NodeJS
@@ -58,7 +57,7 @@ if [ $(echo $TEMPLATES_RESP | jq 'has("value")') == "true" ]; then
    export TEMPLATES=$(echo $TEMPLATES_RESP | jq '.value | map(.capabilityModel["@id"])')
 fi
 
-log "IoT Central" "Templates: $TEMPLATES"
+log "IoT Central" "Templates: $(echo $TEMPLATES | jq -r '.|join(",")')"
 log "IoT Central" "Fetching SAS keys."
 
 DPS_RESP=$(curl -X GET -H "Authorization: $IOTC_API_KEY" ${IOTC_APP_URL}/api/enrollmentGroups?api-version=2022-07-31)
@@ -72,6 +71,7 @@ log "DPS" "Creating enrollment group."
 
 az config set extension.use_dynamic_install=yes_without_prompt
 az login --identity
+# az login --use-device-code
 az account set --subscription "$SUBSCRIPTION_ID"
 az iot dps enrollment-group create -g "$RESOURCE_GROUP" --dps-name "$DPS_RESOURCE_NAME" --enrollment-id "$DPS_ENROLLMENT_NAME" --primary-key "${SYMMETRIC_KEYS[primaryKey]}" --secondary-key "${SYMMETRIC_KEYS[secondaryKey]}" --subscription "$SUBSCRIPTION_ID"
 
@@ -139,7 +139,7 @@ az functionapp config appsettings set --name $FUNCTIONAPP_NAME --resource-group 
 # Call the function to parse models
 log "Configuration" "Calling function."
 CONFIG_RESP=$(curl -X POST -H "Content-Type: application/json" -d "$(echo $TEMPLATES_RESP | jq -r '.value|tostring')" $FUNCTIONAPP_URL)
-log "Configuration" "Response: $CONFIG_RESP"
+log "Configuration" "Response: $(echo $CONFIG_RESP | sed 's/"/\"/')"
 
 
 SQL_CMD_BIN=/opt/mssql-tools18/bin/sqlcmd
@@ -155,5 +155,3 @@ echo yes | apk add --allow-untrusted mssql-tools18_18.1.1.1-1_amd64.apk
 
 log "SQL Server" "Tools installed."
 $SQL_CMD_BIN -S "$SQL_ENDPOINT" -d "$SQL_DATABASE" -U "$SQL_USERNAME" -P "$SQL_PASSWORD" -Q "CREATE USER grafana WITH PASSWORD='$GRAFANA_PASSWORD'; GRANT CONNECT TO grafana; GRANT SELECT TO grafana"
-
-# rm -rf /tmp/setup
