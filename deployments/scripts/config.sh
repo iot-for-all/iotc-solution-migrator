@@ -115,6 +115,9 @@ GRAFANA_DATASOURCE_RESP=$(curl -X POST -H "Authorization: Bearer ${GRAFANA_TOKEN
 GRAFANA_DATASOURCE_UID=$(echo $GRAFANA_DATASOURCE_RESP | jq -r '.datasource.uid')
 log "Grafana" "Datasource created with id: '$GRAFANA_DATASOURCE_UID'."
 
+log "Function" "Update settings."
+# Update function settings
+az functionapp config appsettings set --name $FUNCTIONAPP_NAME --resource-group $RESOURCE_GROUP --subscription $SUBSCRIPTION_ID --settings "GRAFANA_ENDPOINT=$GRAFANA_ENDPOINT" "GRAFANA_TOKEN=$GRAFANA_TOKEN" "GRAFANA_DATASOURCE_UID=$GRAFANA_DATASOURCE_UID"
 
 # Add Azure function code
 ## Basically adding the right bindings to function.json
@@ -131,10 +134,6 @@ npm run generate-config
 log "Function" "Deploy function code."
 # Deploy azure function
 func azure functionapp publish "$FUNCTIONAPP_NAME" --subscription "$SUBSCRIPTION_ID" --typescript
-
-log "Function" "Update settings."
-# Update function settings
-az functionapp config appsettings set --name $FUNCTIONAPP_NAME --resource-group $RESOURCE_GROUP --subscription $SUBSCRIPTION_ID --settings "GRAFANA_ENDPOINT=$GRAFANA_ENDPOINT" "GRAFANA_TOKEN=$GRAFANA_TOKEN" "GRAFANA_DATASOURCE_UID=$GRAFANA_DATASOURCE_UID"
 
 # Call the function to parse models
 log "Configuration" "Calling function."
