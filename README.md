@@ -2,11 +2,21 @@
 
 A simple, managed solution to move your IoT Central devices to a platform service powered by Azure resources and Grafana Dashboards.
 
+![Telemetry](./media/grafana_telemetry.png)
+
 ## Requirements
 
 1. Azure Subscription
 2. Azure IoT Central application and API Key
 3. Compatible IoT Central device templates (see [Prepare IoT Central Application and devices](#prepare-iot-central-application-and-devices)).
+
+### What resources will be deployed
+- Azure IoT Hub (Standard SKU)
+- Azure IoT Hub Provisioning Service (Standard SKU)
+- Azure Function (Consumption mode)
+- Azure SQL Server (Serverless mode)
+- Azure Storage Account
+
 
 ## Limitations
 - Currently the tool does not support migration of devices authenticating through x509 certificates but SAS keys only.
